@@ -30,7 +30,7 @@ program
     .alias('rf')
     .description("list a remote folder's contents")
     .action( (URL) => {
-        sol("read",["folder",URL]).then(()=>{
+        sol.runSol("read",["folder",URL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -38,7 +38,7 @@ program
     .alias('cf')
     .description('create one or more remote folders')
     .action( URL => {
-        sol("createFolder",[URL]).then(()=>{
+        sol.runSol("createFolder",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -46,7 +46,7 @@ program
     .alias('rm')
     .description('delete remote file(s_ or empty folder(s)')
     .action( URL => {
-        sol("delete",[URL]).then(()=>{
+        sol.runSol("delete",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -54,7 +54,7 @@ program
     .alias("up")
     .description('upload file(s) to a Solid server')
     .action( (target,files) => {
-        sol("upload",[target,files]).then( ()=>{
+        sol.runSol("upload",[target,files]).then( ()=>{
        },err=>console.log(err));
      },err=>console.log(err));
 program
@@ -62,7 +62,7 @@ program
     .alias("dn")
     .description('download a remote file')
     .action( (target,URL) => {
-        sol("download",[target,URL]).then( ()=>{
+        sol.runSol("download",[target,URL]).then( ()=>{
         },err=>console.log(err));
     });
 program
@@ -70,7 +70,7 @@ program
     .alias('cp')
     .description('copy a remote file to a remote location')
     .action( (oldURL,newURL) => {
-        sol("copy",[oldURL,newURL]).then(()=>{
+        sol.runSol("copy",[oldURL,newURL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -78,7 +78,7 @@ program
     .alias('cpf')
     .description('deep copy a remote folder to a remote loc.')
     .action( (oldURL,newURL) => {
-        sol("copyFolder",[oldURL,newURL]).then(()=>{
+        sol.runSol("copyFolder",[oldURL,newURL]).then(()=>{
         },err=>console.log(err));
     });
 /* TBD
@@ -86,7 +86,7 @@ program
     .command('batch <scriptFile>')
     .description('batch run commands in a script file')
     .action( (scriptFile) => {
-        sol("batch",[scriptFile]).then(()=>{
+        sol.runSol("batch",[scriptFile]).then(()=>{
         },err=>console.log(err) )
     },err=>console.log(err))
 */
