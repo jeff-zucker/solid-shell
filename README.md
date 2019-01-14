@@ -1,4 +1,4 @@
-# Sol
+# Solid-shell (Sol)
 
 **a command-line and interactive shell for managing Solid PODs**
 
