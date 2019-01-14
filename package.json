@@ -1,0 +1,23 @@
+{
+  "name": "sol",
+  "version": "0.1.0",
+  "main": "sol",
+  "repository": "https://github.com/jeff-zucker/solid-shell.git",
+  "author": "Jeff Zucker",
+  "license": "MIT",
+  "keywords": [
+    "Solid",
+    "Linked Data"
+  ],
+  "bin": {
+    "sol": "./sol"
+  },
+  "scripts": {
+    "sol": "./sol"
+  },
+  "dependencies": {
+    "commander": "^2.19.0",
+    "readline-sync": "^1.4.9",
+    "solid-file-client": "^0.4.2"
+  }
+}
