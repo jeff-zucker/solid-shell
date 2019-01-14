@@ -1,7 +1,8 @@
 # Solid-shell (Sol)
 
 **a command-line and interactive shell for managing Solid PODs**
-
+<br>
+<a href="http://badge.fury.io/js/solid-shell">![npm](https://badge.fury.io/js/solid-shell.svg)</a>
 ## Installation
 
 If you use npm to install you have these options:
