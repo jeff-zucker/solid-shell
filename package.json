@@ -18,7 +18,7 @@
   "dependencies": {
     "commander": "^2.19.0",
     "readline-sync": "^1.4.9",
-    "solid-auth-cli": "^0.1.5",
-    "solid-file-client": "^0.4.2"
+    "solid-auth-cli": "^0.1.8",
+    "solid-file-client": "^0.4.9"
   }
 }

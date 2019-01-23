@@ -20,7 +20,7 @@ async function runSol(com,args) {
             console.log("logging in ...");
             getCredentials().then ( creds => {
                 credentials = creds;
-                fc.login( credentials ).then( session => {
+                fc.login( ).then( session => {
                     console.log("logged in");
                     resolve();
                 }, err => reject("error logging in : "+err) );
@@ -115,7 +115,6 @@ async function runSol(com,args) {
             [target,source] = args;
             fn = path.join( target , source.replace(/.*\//,'') )
             source = mungeURL(source);
-            target = path.join(__dirname,fn);
             console.log("downloading from "+source+" to "+fn);
             fc.downloadFile(source,target).then( () => {
                 console.log("downloaded");
@@ -129,7 +128,6 @@ async function runSol(com,args) {
             target = mungeURL(target);
             if( source.match && source.match(/\*$/) ){  // shell
                 source = source.replace(/\*$/,'');
-                source = path.join(__dirname,source);
 	        fs.readdir(source, (err,files) => {
                     if(err) reject(err);
                     else {
@@ -190,7 +188,6 @@ async function runSol(com,args) {
             break;
 
         case "batch" :
-            source = path.join(__dirname,args[0])
             fs.readFile( source, 'utf-8', (err,content) => {
                 if(err) reject(err);
                 else {
