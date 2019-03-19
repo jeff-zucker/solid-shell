@@ -37,10 +37,10 @@ You will need to create a configuration file named ~/.solid-auth-cli-config.json
 
 ```javascript
   {
-         idp : "...",
-    username : "...",
-    password : "...", // optional
-        base : ""
+         "idp" : "...",
+    "username" : "...",
+    "password" : "...", // optional
+        "base" : ""
   }
 ```
 
