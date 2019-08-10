@@ -30,7 +30,7 @@ program
     .alias('rf')
     .description("list a remote folder's contents")
     .action( (URL) => {
-        sol.runSol("read",["folder",URL]).then(()=>{
+        sol.runSol("readFolder",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
