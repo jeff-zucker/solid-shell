@@ -35,12 +35,12 @@ Once in the shell, enter "help" to see a list of commands available in the shell
 
 You will need to create a configuration file named ~/.solid-auth-cli-config.json.  It should contain a JSON object holding your Identity Provider, username, aa base directory as explained below.  It may optionally include your password.  If you choose not to store your password in the file, sol will prompt you for a password.
 
-```javascript
+```json
   {
-         idp : "...",
-    username : "...",
-    password : "...", // optional
-        base : ""
+         "idp" : "...",
+    "username" : "...",
+    "password" : "...", // optional
+        "base" : ""
   }
 ```
 
