@@ -19,77 +19,44 @@ program
     });
 program
     .command('read <URL>')
-    .alias('r')
-    .description('read a remote file')
+    .alias('ls')
+    .description('list contents of a file or folder')
     .action( (URL) => {
         sol.runSol("read",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
-    .command('readFolder <URL>')
-    .alias('rf')
-    .description("list a remote folder's contents")
-    .action( (URL) => {
-        sol.runSol("readFolder",[URL]).then(()=>{
-        },err=>console.log(err));
-    });
-program
-    .command('createFolder <URL...>')
-    .alias('cf')
-    .description('create one or more remote folders')
-    .action( URL => {
-        sol.runSol("createFolder",[URL]).then(()=>{
-        },err=>console.log(err));
-    });
-program
     .command('delete <URL...>')
     .alias('rm')
-    .description('delete remote file(s_ or empty folder(s)')
+    .description('delete file or recursively delete folder')
     .action( URL => {
         sol.runSol("delete",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
-    .command('upload <target> <files...>')
-    .alias("up")
-    .description('upload file(s) to a Solid server')
-    .action( (target,files) => {
-        sol.runSol("upload",[target,files]).then( ()=>{
-       },err=>console.log(err));
-     },err=>console.log(err));
-program
-    .command('download <target> <URL>')
-    .alias("dn")
-    .description('download a remote file')
-    .action( (target,URL) => {
-        sol.runSol("download",[target,URL]).then( ()=>{
-        },err=>console.log(err));
-    });
-program
     .command('copy <oldURL> <newURL>')
     .alias('cp')
-    .description('copy a remote file to a remote location')
+    .description('copy a file or recursively copy a folder')
     .action( (oldURL,newURL) => {
         sol.runSol("copy",[oldURL,newURL]).then(()=>{
         },err=>console.log(err));
     });
 program
-    .command('copyFolder <oldURL> <newURL>')
-    .alias('cpf')
-    .description('deep copy a remote folder to a remote loc.')
+    .command('move <oldURL> <newURL>')
+    .alias('mv')
+    .description('move a file or recursively move a folder')
     .action( (oldURL,newURL) => {
-        sol.runSol("copyFolder",[oldURL,newURL]).then(()=>{
+        sol.runSol("mv",[oldURL,newURL]).then(()=>{
         },err=>console.log(err));
     });
-/* TBD
 program
-    .command('batch <scriptFile>')
+    .command('run <scriptFile>')
     .description('batch run commands in a script file')
     .action( (scriptFile) => {
-        sol.runSol("batch",[scriptFile]).then(()=>{
+        sol.runSol("run",[scriptFile]).then(()=>{
         },err=>console.log(err) )
     },err=>console.log(err))
-*/
+
 if(process.argv.length<3){
     process.argv.push("-h");
 }

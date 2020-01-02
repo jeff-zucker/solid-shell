@@ -1,272 +1,268 @@
 const fs = require("fs");
 const path = require("path");
-const fc = require("solid-file-client");
+const FC=require("solid-file-client")
+const auth = require('solid-auth-cli');
+const fc = new FC(auth)
 const show = require("./sol.show.js");
 const shell = require('./sol.shell.js');
+var verbosity = 1
 let credentials;
 
 module.exports.runSol = runSol;
 async function runSol(com,args) {
-  let fn,source,target;
+  let fn,source,target,expected,opts;
   return new Promise((resolve,reject)=>{  switch(com){
 
         case "help" :
         case "h" :
-            show("help");
+            show("help","",verbosity);
             resolve();
             break;
 
+        case "verbosity" :
+        case "v" :
+            let v = args[0]
+            if(typeof(v)!="undefined" && v<4) {
+              verbosity = v
+            }
+            else {
+              do_err( "Bad verbosity level" )
+            }
+            resolve()
+            break
+
         case "login" :
-            console.log("logging in ...");
-            getCredentials().then ( creds => {
-                credentials = creds;
-                fc.login( ).then( session => {
-                    console.log("logged in");
-                    resolve();
-                }, err => reject("error logging in : "+err) );
-            }, err => reject("error getting credentials : "+err) );
+            login().then( session => {
+                resolve();
+            }, err => reject("error logging in : "+err) );
             break;
 
-        case "rf" :
-        case "readFolder" :
-            source = mungeURL(args[0]);
-            console.log("fetching from "+source)
-            fc.readFolder(source).then( folderObject => {
-                show("folder",folderObject);
-                resolve()
-            },err=>console.log(err));
-            break;
-        
-
-        case "r" :
+        case "ls" :
         case "read" :
-        case "readFile" :
             source = mungeURL(args[0]);
-            console.log("fetching from file "+source);
-            fc.readFile(source).then( fileBody =>{
-                show("file",fileBody);
-                resolve()
-            },err=>console.log(err));
+            if(!source) resolve();
+            if( source.endsWith("/") ){
+                log("\n*** fetching from folder "+source)
+                fc.readFolder(source,{links:"include"}).then( folderObject => {
+                    show("folder",folderObject,verbosity);
+                    resolve()
+                },err=>{ do_err(err); resolve() })
+            }
+            else {
+                log("\n*** fetching from file "+source);
+                fc.readFile(source).then( fileBody =>{
+                    show("file",fileBody,verbosity);
+                    resolve()
+                },err=>{ do_err(err); resolve() })
+            }
+            break;
+
+        case "cr" :
+        case "create" :
+            source = mungeURL(args.shift())
+            if(!source) resolve();
+            let content = args.join(" ") || ""
+            let cType   = "text/turtle"
+            if(!source) resolve();
+            if( source.endsWith("/") ){
+                log("\n*** creating folder "+source)
+                fc.createFolder(source).then( () => {
+                    log("folder created")
+                    resolve()
+                },err=>{ do_err(err); resolve() })
+            }
+            else {
+               log("\n*** creating file "+source)
+                fc.createFile(source,content,cType).then( () => {
+                    log("file created")
+                    resolve()
+                },err=>{ do_err(err); resolve() })
+            }
             break;
 
         case "rm" :
         case "delete" :
-            if( args.length>1 ){
-                target = [ args ]  // in shell, multiple args
-            }
-            else target = args[0];
-            if( typeof(target)!="string" && target.length<2){
-                target = target[0];
-            }
-            if( typeof(target)==="string" ){
-                target = mungeURL(target);
-                if( target.match(/\*$/) ){
-                    target = target.replace(/\*$/,'');
-                    fc.readFolder(target).then( gotFolder => {
-                        let all= gotFolder.folders.concat(gotFolder.files);
-                        doMany("rm",all).then( ()=>{
-                            resolve()
-                        },err=>console.log(err));
-                    },err=>console.log(err));
-                    break;
-                }
-                console.log("deleting "+target);
-                fc.deleteFile(target).then( () => {
-                    console.log("deleted");
-                    resolve();
-                }, err => reject("error deleting "+err) );
-                break;
+            source = mungeURL(args[0]);
+            if(!source) resolve();
+            if( source.endsWith("/") ){
+                log("\n*** deleting folder "+source)
+                fc.deleteFolder(source).then( () => {
+                    log("folder deleted")
+                    resolve()
+                },err=>{ do_err(err); resolve() })
             }
             else {
-                doMany("delete",target).then( ()=>{
-                    resolve()
-                }, err => reject(err) )
-                break;
-            }
-            break;
-
-        case "cf" :
-        case "createFolder" :
-            if( args.length>1 ){
-                target = [ args ]
-            }
-            else target = args[0];
-            if( typeof(target)!="string" && target.length<2){
-                target = target[0];
-            }
-            if( typeof(target)==="string" ){
-                target = mungeURL(target);
-                console.log("creating folder '"+target+"'");
-                fc.createFolder(target).then( () => {
-                    console.log("created folder");
+                log("\n*** deleting file "+source)
+                fc.deleteFile(source).then( () => {
+                    log("file deleted\n");
                     resolve();
-                }, err => reject("error creating folder "+err) );
-            }
-            else {
-                doMany("createFolder",target).then( ()=>{
-                    resolve()
-                }, err => reject(err) )
-                break;
-            }
-            break;
-
-        case "dn" :
-        case "download" :
-            [target,source] = args;
-            fn = path.join( target , source.replace(/.*\//,'') )
-            source = mungeURL(source);
-            console.log("downloading from "+source+" to "+fn);
-            fc.downloadFile(source,target).then( () => {
-                console.log("downloaded");
-                resolve();
-            }, err => reject("error downloading file "+err) );
-            break;
-
-        case "up" :
-        case "upload" :
-            [ target, source ] = args;
-            target = mungeURL(target);
-            if( source.match && source.match(/\*$/) ){  // shell
-                source = source.replace(/\*$/,'');
-	        fs.readdir(source, (err,files) => {
-                    if(err) reject(err);
-                    else {
-                        files = files.map(x=>path.join(source,x))
-                        doMany("upload",files,target).then( ()=>{
-                            resolve()
-                        }, err => reject(err) )
-  		    }
-                },err=>reject(err));
-                break;
-            }
-            if( typeof(source)!="string" ){
-                doMany("upload",source,target).then( ()=>{
-                    resolve()
-                }, err => reject(err) )
-                break;
-            }
-            if( fs.lstatSync(source).isFile() ){
-                 fn = source.replace(/.*\//,'')
-                 console.log("uploading file "+target+fn);
-                 fc.uploadFile(source,target).then( () => {
-                      console.log("uploaded file");
-                      resolve();
-                 }, err => reject("error uploading file "+err) );
-                break;
-            }
-            else if( fs.lstatSync(source).isDirectory() ){
-                 source = source.replace(/.*\//,'')
-                 target = path.join(target,source).replace(/^https:\//,"https://")
-                 console.log("uploading folder "+target);
-                 fc.createFolder(target).then( () => {
-                      console.log("uploaded folder");
-                      resolve();
-                 }, err => reject("error uploading folder "+err) );
+                },err=>{ do_err(err); resolve() })
             }
             break;
 
         case "cp"   :
         case "copy" :
-            args[0] = mungeURL(args[0]);
-            args[1] = mungeURL(args[1]);
-            console.log("copying "+args[0]+" to "+args[1]);
-            fc.copyFile(args[0],args[1]).then( () => {
-                console.log("copied");
+        case "cps" :
+        case "cpt" :
+            let opts = {}
+            if(com==="cps") opts.merge="source"
+            if(com==="cpt") opts.merge="target"
+            source = mungeURL(args[0]);
+            target = mungeURL(args[1]);
+            if(!source) resolve();
+            if(!target) resolve();
+            log("\n*** copying "+source+" to "+target);
+            fc.copy(source,target,opts).then( () => {
+                log("copied");
                 resolve();
-            }, err => reject("error copying file "+err) );
+            },err=>{ do_err(err); resolve() })
             break;
 
-        case "cpf"   :
-        case "copyFolder" :
-            args[0] = mungeURL(args[0]);
-            args[1] = mungeURL(args[1]);
-            console.log("copying folder "+args[0]+" to "+args[1]);
-            fc.copyFolder(args[0],args[1]).then( () => {
-                console.log("copied");
+        case "mv"   :
+        case "move" :
+            source = mungeURL(args[0]);
+            target = mungeURL(args[1]);
+            if(!source) resolve();
+            if(!target) resolve();
+            log("\n*** moving "+source+" to "+target);
+            fc.move(source,target).then( () => {
+                log("moved");
                 resolve();
-            }, err => reject("error copying folder "+err) );
+            },err=>{ do_err(err); resolve() })
             break;
 
-        case "batch" :
-            fs.readFile( source, 'utf-8', (err,content) => {
-                if(err) reject(err);
-                else {
-                    let set = []
-                    let commands = content.split("\n")
-                    for(c in commands){
-                        let line = commands[c].trim()
-                        if( !line ) continue;
-                        let newArgs = line.split(/\s+/)
-                        let newCom  = newArgs.shift()
-                        set.push( function(){
-                            runSol( newCom, newArgs ).then( ()=> {
-                                batch.skip()
-                            },err=>batch.skip(err) )
-                        })
+        case "run" :
+            source = mungeURL(args[0]);
+            if(!source) resolve();
+            fc.readFile(source).then( async (content) => {
+              let statements = content.split("\n")
+              for(stmt of statements) {
+                  if(stmt.length===0) continue       // ignore blank line
+                  if(stmt.startsWith(";")) continue  // ignore comment
+                  if(stmt.startsWith("END")) break  // stop on END
+                  let args=stmt.split(/\s+/)
+                  let c = args.shift()
+                  await runSol(c,args)
+              }
+              resolve()
+            },err=>{ do_err(err); resolve() })
+            break;
+
+        case "t" :
+        case "test" :
+            let testType = args.shift() || ""
+            if(testType==="content"){
+                source = mungeURL(args.shift())
+                if(!source) resolve();
+                expected = args.join(" ")
+                if(!source) resolve();
+                fc.readFile(source).then( (got) => {
+                    source = path.basename(source)
+                    if(got===expected){
+                        console.log(`ok content for ${source}`)
                     }
-                    batch.run(set);
-                }
-            },err=>reject(err));
+                    else {
+                        console.log(`fail content for ${source}, got : ${got}`)
+                    }
+                    resolve();
+                },err=>{ log(err); resolve() })
+            }
+            else if(testType==="files"){
+                source = mungeURL(args.shift())
+                if(!source) resolve();
+                expected = args.join(" ")
+                if(!source) resolve();
+                fc.readFolder(source).then( (got) => {
+                    let files=[]
+                    for(g of got.files ){
+                      files.push( g.name)
+                    }
+                    files = files.join(' ')
+                    source = path.basename(source)
+                    if(files===expected){
+                        console.log(`ok files for ${source}`)
+                    }
+                    else {
+                        console.log(`fail files for ${source}, got : ${files} expected ${expected}`)
+                    }
+                    resolve();
+                },err=>{ log(err); resolve() })
+            }
             break;
 
         default :
-            if( com.match && com.match(/^\!/) ){
-                /* issue shell command, needs work 
-                const shell = require('shelljs');
-                shell.config.silent = true; // suppress stdout
-                com = com.replace(/^\!/,'');
-                results = shell.exec( com );
-                console.log(results.stdout);
-                resolve();
-                */
-            }
-            else if(com) console.log("can't parse last command")
+            if(com) log("can't parse last command")
             resolve();
     }});
 }
+/**
+ * mungeURL()
+ *
+ * adds the base pod location to remote relative URLs (start with /)
+ * adds the current working folder to local relative URLs (start with ./)
+ *
+ *
+ */
 function mungeURL(url) {
-    if( url && url.match(/^https:\/[^/]/) )
+    if(!url) return
+    if( url.match(/^https:\/[^/]/) ){
          url = url.replace(/^https:\//,"https://")
-    if( url && !url.match(/^http/) && credentials && credentials.base) 
+    }
+    if( url.match(/^\//) && credentials && credentials.base ){
         return credentials.base + url;
-    else
-        return url;
+    }
+    else if( url.match(/^\.\//) ){
+        return  "file://" + process.cwd() + url.replace(/\./,'')
+    }
+    else if( !url.match(/^(http|file|app)/) ){
+        console.log("URL must start with https:// or file:// or / or ./")
+        return false
+    }
+    return url
 }
-function mungeLocalFolder(source){
-    let files = [];
-    for(var s in source){
-        if( fs.lstatSync(source[s]).isFile() ){
-            files.push(source[s]);
-        }
-    }
-    return(files)
-}
-async function doMany(com,files,targetDir){
-    if( files.length < 1 ) return;
-    let file = files.shift();
-    if( typeof(file)!="string" ){
-        file = file.url;
-    }
-    let fn = file.replace(/.*\//,'');
-    if( targetDir ){
-//        let target = path.join(targetDir,fn).replace(/:\//,'://');
-        runSol(com,[targetDir,file]).then( ()=>{
-            doMany(com,files,targetDir);
-        });
-    }
-    else {
-        runSol(com,[file]).then( ()=>{
-            doMany(com,files);
-        });
-    }
-}
-
+/**
+ * getCredentials()
+ *
+ * check for ~/.solid-auth-cli-config.json
+ * if not found, check environment variables
+ * prompt for things not found in either place
+ * see solid-auth-cli for details
+ */
 async function getCredentials(){
-    var fn  = path.join(process.env.HOME,".solid-auth-cli-config.json")
-    var txt = fs.readFileSync(fn,'utf-8');
-    if(!txt) { console.log("No config file found") }
-    var obj = JSON.parse(txt);
-    if(!obj) { console.log("Could not parse config file") }
-    obj.password = obj.password || await shell.prompt("password? ","mute")
-    return obj
+    let creds = await auth.getCredentials();
+    creds.idp = creds.idp || await shell.prompt("idp? ")
+    creds.username = creds.username || await shell.prompt("username? ")
+    creds.base = creds.base || await shell.prompt("base folder? ")
+    creds.password = creds.password || await shell.prompt("password? ","mute")
+    return creds
 }
+/**
+ * login()
+ */
+async function login(){
+    log("logging in ...")
+    credentials = await getCredentials()
+    let session = await auth.login(credentials)
+    log(`logged in as <${session.webId}>`)
+    return session
+}
+function do_err(err){
+    if(verbosity==1||verbosity==2){
+       console.log(`Error: ${(err.status||"unknown")} ${(err.statusText||"")}`)
+    }
+    if(verbosity==3){
+        console.log(err)
+    }
+}
+function log(msg) {
+    if(verbosity==2 || verbosity==3){
+        console.log(msg)
+    }
+}
+/*
+Verbosity
+  0 completely silent
+  1 report brief error messages
+  2 report brief error messages and steps
+  3 report full error messages and steps
+*/

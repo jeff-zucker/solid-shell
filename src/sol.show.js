@@ -1,44 +1,68 @@
-/*
-*  TBD internationalization
-*/
-module.exports = function(type,thing){
+const path = require("path")
+
+module.exports = function(type,thing,verbosity){
     switch(type) {
         case "file" :
-            console.log(thing)
+            log(thing,verbosity)
             break
         case "folder" : 
             /*
             * TBD : full folder listing with size, stat, perms 
             */
+            let fo = ( thing.folders.length>0 ) ? "Folders: " : ""
+            let fi = ( thing.files.length>0 ) ? "Files: " : ""
             for(var o in thing.folders ){ 
-                console.log( "folder : " + thing.folders[o].name ) 
+                fo = fo + thing.folders[o].name + " " 
+            }
+            let folderLinks = thing.links
+            if( folderLinks ) {
+                if( folderLinks.meta )
+                    fi = fi + path.basename(folderLinks.meta) + " " 
+                if( folderLinks.acl )
+                    fi = fi + path.basename(folderLinks.acl) + " " 
             }
             for(var i in thing.files ){ 
-                console.log( thing.files[i].name ) 
+                fi = fi + thing.files[i].name + " " 
+                let fileLinks = thing.files[i].links || {}
+                if( fileLinks.meta ){
+                   fi = fi + path.basename(fileLinks.meta) + " " 
+                }
+                if( fileLinks.acl ){
+                    fi = fi + path.basename(fileLinks.acl) + " " 
+                }
             }
+            log(fo+"\n"+fi,verbosity)
             break;
 
         case "help" : 
-            console.log(`
+            log(`----------------------------------------------------------------------------
+   sol - interactive shell for Solid - version 1.0.0
 ----------------------------------------------------------------------------
-   sol - interactive shell for Solid <http://jeff-zucker.github.io/sol>
-----------------------------------------------------------------------------
- h|help                         show this help text
- q|quit                         logout and exit
- r|read <URL>                   read & show contents of a remote file
-rf|readFolder <URL>             read & show contents of a remote folder
-cf|createFolder <URL...>        create remote folder(s)
-rm|delete <URL...>              delete remote file(s) or empty folder(s)
-up|upload <target> <files...>   upload file(s) to a remote location
-dn|download <target> <URL>      download file(s) to the local disk
-cp|copy <oldURL> <newURL>       copy a file from one remote location to another
+  ls URL        list contents of a file or folder
+  rm URL        delete file or recursively delete folder
+  cp URLa URLb  copy file or recrusively copy folder 
+  mv URLa URLb  move file or recrusively move folder 
+  h             show this help screen
+  q             quit Solid-Shell
 
-Notes: elipsis (...) indicates multiple files; for all but "cf" these can
-include file globs e.g. "rm /public/foo/*"; for all, including "cf", you may
-list  multiple space-separated files e.g. "up /public/foo file1.txt file2.txt".
-None of the commands recurse into sub-folders (yet).  The "target" parameter
-is always a folder, not a filename.
-`);
-            break
+  URL starts with 
+    https://   absolute remote address
+    file://    absolute local address
+    app://     absolute in-memory address
+    /          remote address relative to pod root
+    ./         local address relative to current working folder
+
+  URL ends with
+    /          folder (e.g. /foo/ is a folder )
+    no /       file (e.g. /foo is a file )
+
+  * for more help, see https://github.com/jeff-zucker/solid-shell`
+      ,verbosity)
+      break
+    }
+}
+function log(msg,verbosity) {
+    if(verbosity>0){
+        console.log(msg)
     }
 }
