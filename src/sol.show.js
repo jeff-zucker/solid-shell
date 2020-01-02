@@ -38,12 +38,18 @@ module.exports = function(type,thing,verbosity){
             log(`----------------------------------------------------------------------------
    sol - interactive shell for Solid - version 1.0.0
 ----------------------------------------------------------------------------
-  ls URL        list contents of a file or folder
-  rm URL        delete file or recursively delete folder
-  cp URLa URLb  copy file or recrusively copy folder 
-  mv URLa URLb  move file or recrusively move folder 
-  h             show this help screen
-  q             quit Solid-Shell
+  cr  <URL> <content>    create a file or folder
+  cp  <URLa> <URLb>      copy a file or recursively copy a folder
+  cps <URLa> <URLb>      recursively copy a folder, merge preference to source
+  cpt <URLa> <URLb>      recursively copy a folder, merge preference to target
+  mv  <URLa> <URLb>      move a file or recursively move a folder
+  rm  <URL>              delete a file or recursively delete a folder
+  ls  <URL>              list file or folder contents
+  run <URL>              run a batch file of Sol commands
+  v | verbosity <level>  set verbosity level
+  t | test <type> <args> run a test
+  h | help               show this help
+  q | quit               quit
 
   URL starts with 
     https://   absolute remote address
