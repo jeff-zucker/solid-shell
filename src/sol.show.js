@@ -51,18 +51,14 @@ module.exports = function(type,thing,verbosity){
   h | help               show this help
   q | quit               quit
 
-  URL starts with 
-    https://   absolute remote address
-    file://    absolute local address
-    app://     absolute in-memory address
-    /          remote address relative to pod root
-    ./         local address relative to current working folder
+  URL starts with  https://   absolute remote address
+                   file://    absolute local address
+                   app://     absolute in-memory address
+                   /          remote address relative to specified base
+                  ./          local address relative to current working folder
 
-  URL ends with
-    /          folder (e.g. /foo/ is a folder )
-    no /       file (e.g. /foo is a file )
-
-  * for more help, see https://github.com/jeff-zucker/solid-shell`
+  URL ends with    /          folder (e.g. /foo/ is a folder )
+                   no /       file (e.g. /foo is a file )`
       ,verbosity)
       break
     }
