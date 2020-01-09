@@ -18,6 +18,13 @@ program
         shell.sh()
     });
 program
+    .command('head <URL>')
+    .description('show headers for a file or folder')
+    .action( (URL) => {
+        sol.runSol("head",[URL]).then(()=>{
+        },err=>console.log(err));
+    });
+program
     .command('read <URL>')
     .alias('ls')
     .description('list contents of a file or folder')

@@ -5,7 +5,7 @@ const auth = require('solid-auth-cli');
 const fc = new FC(auth)
 const show = require("./sol.show.js");
 const shell = require('./sol.shell.js');
-var verbosity = 1
+var verbosity = 2
 let credentials;
 
 module.exports.runSol = runSol;
@@ -55,6 +55,16 @@ async function runSol(com,args) {
                     resolve()
                 },err=>{ do_err(err); resolve() })
             }
+            break;
+
+        case "head" :
+            source = mungeURL(args[0]);
+            if(!source) resolve();
+            log("\n*** fetching head from "+source);
+                fc.readHead(source).then( headers => {
+                    log(headers)
+                    resolve()
+                },err=>{ do_err(err); resolve() })
             break;
 
         case "cr" :

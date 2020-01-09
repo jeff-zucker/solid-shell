@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "sol",
   "repository": "https://github.com/jeff-zucker/solid-shell.git",
   "author": "Jeff Zucker",
@@ -19,6 +19,6 @@
     "commander": "^2.19.0",
     "readline-sync": "^1.4.9",
     "solid-auth-cli": "^1.0.10",
-    "solid-file-client": "^1.0.0"
+    "solid-file-client": "^1.0.2"
   }
 }
