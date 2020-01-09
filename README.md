@@ -89,7 +89,8 @@ or remote locations.  You must specify these options in the URL.
   mv  <URLa> <URLb>         move a file or recursively move a folder
   rm  <URL>                 delete a file or recursively delete a folder
   ls  <URL>                 list file or folder contents
-  run <URL>                run a batch file of Sol commands
+  run <URL>                 run a batch file of Sol commands
+  head <URL>                show headers for the item
   v | verbosity <level>    set verbosity level
   t | test <type> <args>   run a test
   h | help                 show this help
