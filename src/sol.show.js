@@ -46,6 +46,7 @@ module.exports = function(type,thing,verbosity){
   rm  <URL>              delete a file or recursively delete a folder
   ls  <URL>              list file or folder contents
   run <URL>              run a batch file of Sol commands
+  head <URL>             show headers for an item
   v | verbosity <level>  set verbosity level
   t | test <type> <args> run a test
   h | help               show this help
