@@ -11,11 +11,12 @@ Solid-shell (hereafter called Sol) is a nodejs tool for accessing Solid files an
 If you use npm to install you have these options:
 
    * install locally and use "npx sol" to run from the local install
-   * intall globally (-g) and you should then be able  use just "sol"
+   * install globally (-g) and you should then be able  use just "sol"
 
 If you clone or download
 
-   * change to the sol directory and run with "./sol"
+   * change to the sol directory and then npm install (first time only)
+   * then run with "./sol"
 
 ## Command-line usage
 
@@ -38,9 +39,7 @@ Once in the shell, enter "help" to see a list of commands available in the shell
 
 You will need to tell Sol your login credentials through one of three methods:
 
-* **in-script object** in your script create a credential object and pass it to login like this:
-
-* **configuration file**  You may create a configuration file named ~/.solid-auth-cli-config.json.  It should contain a JSON object holding your Identity Provider, username, a base directory as explained below.  It may optionally include your password.
+* **configuration file**:  You may create a configuration file named ~/.solid-auth-cli-config.json.  It should contain a JSON object holding your Identity Provider, username, a base directory as explained below.  It may optionally include your password.
 ```javascript
   const credentials = {
          "idp" : "https://solid.community",
@@ -49,9 +48,9 @@ You will need to tell Sol your login credentials through one of three methods:
         "base" : "https://solid.community/public"
   }
 ```
-* **environment variables**  You may prefer to store your data in environment variables SOLID_IDP, SOLID_USERNAME, SOLID_PASSWORD, SOLID_BASE.
+* **environment variables**:  You may prefer to store your data in environment variables SOLID_IDP, SOLID_USERNAME, SOLID_PASSWORD, SOLID_BASE.
 
-* **let Sol prompt you** If one or more of the settings is not found in the config file or in the environment variables, Sol will prompt you for the missing settings on startup.
+* **let Sol prompt you**: If one or more of the settings is not found in the config file or in the environment variables, Sol will prompt you for the missing settings on startup.
 
 ## Specifying a base folder
 
