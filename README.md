@@ -8,6 +8,12 @@ Solid-shell (hereafter called Sol) is a nodejs tool for accessing Solid files an
 
 ## Installation
 
+To install from npm
+
+  npm install solid-shell  // npm install -g solid-shell for global install
+  change into the solid-shell folder
+  npm install
+
 If you use npm to install you have these options:
 
    * install locally and use "npx sol" to run from the local install
