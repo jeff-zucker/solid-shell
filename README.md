@@ -40,15 +40,15 @@ Once in the shell, enter "help" to see a list of commands available in the shell
 
 You will need to tell Sol your login credentials through one of three methods:
 
-* **configuration file**:  You may create a configuration file named ~/.solid-auth-cli-config.json.  It should contain a JSON object holding your Identity Provider, username, a base directory as explained below.  It may optionally include your password.
-```javascript
-  const credentials = {
+* **configuration file**: You may create a configuration file named ~/.solid-auth-cli-config.json. It should contain a JSON object holding your Identity Provider, username, a base directory as explained below. It may optionally include your password.
+  ```json
+  {
          "idp" : "https://solid.community",
-    "username" : "jeffz.",
+    "username" : "jeffz",
     "password" : "...",
-        "base" : "https://solid.community/public"
+        "base" : "https://jeffz.solid.community/public"
   }
-```
+  ```
 * **environment variables**:  You may prefer to store your data in environment variables SOLID_IDP, SOLID_USERNAME, SOLID_PASSWORD, SOLID_BASE.
 
 * **let Sol prompt you**: If one or more of the settings is not found in the config file or in the environment variables, Sol will prompt you for the missing settings on startup.
