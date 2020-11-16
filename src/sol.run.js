@@ -92,22 +92,24 @@ async function runSol(com,args) {
 
         case "rm" :
         case "delete" :
-            source = mungeURL(args[0]);
-            if(!source) resolve();
-            if( source.endsWith("/") ){
-                log("\n*** deleting folder "+source)
-                fc.deleteFolder(source).then( () => {
-                    log("folder deleted")
-                    resolve()
-                },err=>{ do_err(err); resolve() })
-            }
-            else {
-                log("\n*** deleting file "+source)
-                fc.deleteFile(source).then( () => {
-                    log("file deleted\n");
-                    resolve();
-                },err=>{ do_err(err); resolve() })
-            }
+            for (const arg of args) {
+                source = mungeURL(arg);
+                if(!source) resolve();
+                if( source.endsWith("/") ){
+                    log("\n*** deleting folder "+source)
+                    fc.deleteFolder(source).then( () => {
+                        log("folder deleted")
+                        resolve()
+                    },err=>{ do_err(err); resolve() })
+                }
+                else {
+                    log("\n*** deleting file "+source)
+                    fc.deleteFile(source).then( () => {
+                        log("file deleted\n");
+                        resolve();
+                    },err=>{ do_err(err); resolve() })
+                }
+            };
             break;
 
         case "cp"   :
