@@ -1,13 +1,14 @@
 {
   "name": "solid-shell",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "main": "sol",
   "repository": "https://github.com/jeff-zucker/solid-shell.git",
   "author": "Jeff Zucker",
   "license": "MIT",
   "keywords": [
     "Solid",
-    "Linked Data"
+    "Linked Data",
+    "NodeJS"
   ],
   "bin": {
     "sol": "./sol"
@@ -16,9 +17,13 @@
     "sol": "./sol"
   },
   "dependencies": {
-    "commander": "^2.19.0",
-    "readline-sync": "^1.4.9",
-    "solid-auth-cli": "^1.0.10",
-    "solid-file-client": "^1.0.2"
+    "@solid-rest/core": "^2.1.0",
+    "@solid-rest/file": "^2.1.0",
+    "commander": "^7.2.0",
+    "mime-types": "^2.1.31",
+    "rdflib": "^2.2.5",
+    "readline-sync": "^1.4.10",
+    "solid-namespace": "^0.5.1",
+    "solid-node-client": "^2.1.0"
   }
 }

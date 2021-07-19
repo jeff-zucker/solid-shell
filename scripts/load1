@@ -1,0 +1,43 @@
+add 
+  :Jun a :Person.
+  :Alejandro a :Person.
+  :Keisha a :Person.
+  :Spot a :Dog; :has :fleas.
+
+remove :Jun
+
+replace
+  ? :has :fleas
+  ? :has :ticks
+
+replace
+  ? :has :fleas
+  ? :has :ticks
+
+add
+  ? a :Senior
+where
+  ? :age > 65
+
+match ? a :Person
+
+match :Spot
+
+# END
+
+  expected output of "match ? a :Person"
+
+    Alejandro a Person. Keisha a Person.
+
+  expected output of "match :Spot"
+
+    Spot a Dog. Spot has ticks.
+
+triple-pattern
+
+  An RDF triple whose terms may be wildcards (indicated by ? or missing terms)
+  e.g.  
+
+   ? a :Person   // matches statements specifying any subject as a :Person.
+   :Keisha       // matches any statements where Keisha is the subject
+   :Keisha :age  // matches statements with Keisha as subject, :age as predicte

@@ -35,31 +35,23 @@ module.exports = function(type,thing,verbosity){
             break;
 
         case "help" : 
-            log(`----------------------------------------------------------------------------
-   sol - interactive shell for Solid - version 1.0.0
-----------------------------------------------------------------------------
-  cr  <URL> <content>    create a file or folder
-  cp  <URLa> <URLb>      copy a file or recursively copy a folder
-  cps <URLa> <URLb>      recursively copy a folder, merge preference to source
-  cpt <URLa> <URLb>      recursively copy a folder, merge preference to target
-  mv  <URLa> <URLb>      move a file or recursively move a folder
-  rm  <URL>              delete a file or recursively delete a folder
-  ls  <URL>              list file or folder contents
-  run <URL>              run a batch file of Sol commands
-  head <URL>             show headers for an item
-  v | verbosity <level>  set verbosity level
-  t | test <type> <args> run a test
-  h | help               show this help
-  q | quit               quit
+            log(`------------------------------------------------------------------------------
+Solid Shell - a command line, batch processor, & interactive shell for Solid
+------------------------------------------------------------------------------
+       Document Management  put, get, head, copy, move, delete, zip, unzip
+       Semantic Management  load, putBack, add, remove, match
+  Testing/Batch Processing  run, exists, notExists, matchText, verbosity
+              Connectivity  login, base
+         Interactive Shell  help, quit
 
-  URL starts with  https://   absolute remote address
-                   file://    absolute local address
-                   app://     absolute in-memory address
-                   /          remote address relative to specified base
-                  ./          local address relative to current working folder
+  All commands work on local or remote Pods and on serverless local files.
+  Use ./ for the local current working directory and / for the root of a
+  Pod you have defined by setting the "base".
 
-  URL ends with    /          folder (e.g. /foo/ is a folder )
-                   no /       file (e.g. /foo is a file )`
+  > copy ./foo/ /bar/            # recursively copies from local to Pod
+  > copy /foo/ ./bar/            # recursively copies from Pod to local
+  > copy /foo/ https://bar/baz/  # recursively copies from one Pod to another
+------------------------------------------------------------------------------`
       ,verbosity)
       break
     }
@@ -69,3 +61,46 @@ function log(msg,verbosity) {
         console.log(msg)
     }
 }
+
+/*
+       Document Management  put, get, head, copy, move, delete, zip, unzip
+       Semantic Management  load, putBack, add, remove, match
+  Testing/Batch Processing  run, exists, notExists, matchText, verbosity
+              Connectivity  login, base
+         Interactive Shell  help, quit
+
+  put         <URL> <content>  create a file or folder with Write permission
+  post        <URL> <content>  create a file or folder with Append permission
+  get         <URL>            read a file or folder
+  head        <URL>            show headers for an item
+  copy        <URLa> <URLb>    copy a file or recursively copy a folder
+  move        <URLa> <URLb>    move a file or recursively move a folder
+  delete      <URL>            delete a file or recursively delete a folder
+  run         <URL>            run a batch file of sol commands
+  load        <URL>            loads a file into an in-memory store
+  putBack     <URL>            writes an in-memory store to a file
+  add         <turtleString>   adds a triple to the in-memory store
+  remove      <turtleString>   removes a triple from the in-memory store
+  login                        login to a Solid server (see README for details)
+  base        <URL>            set the remote base (will be prepended to /)
+  verbosity   <level>          set verbosity level
+  help                         show this help
+  quit                         quit
+  matchTriple <turtleString>   true if triple is found in the in-memory store
+  exists      <URL>            true if URL exists & is readable by current user
+  notExists   <URL>            true if URL does not exist or is not readable
+  matchText   <URL> <text>     true if contents of URL match supplied text`
+
+  https://*  absolute address in a Solid server
+         /*  addresss in a Solid server relative to a user-defined base
+   file://*  absolute address in a local serverless file system
+        ./*  addresss in a local file system relative to current directory`
+
+  URL starts with  https://   absolute remote address
+                   file://    absolute local address
+                   /          remote address relative to specified base
+                  ./          local address relative to current working folder
+
+  URL ends with    /          folder (e.g. /foo/ is a folder )
+                   no /       file (e.g. /foo is a file )`
+*/

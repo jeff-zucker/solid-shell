@@ -1,0 +1,46 @@
+# PUT
+put ./test-folder/test.ttl "This is a test."
+
+# MOVE
+move  ./test-folder/test.ttl  ./test-folder/test-2.ttl
+notExists ./test-folder/test.ttl
+
+# GET
+contentsMatch ./test-folder/test-2.ttl "This is a test."
+
+# COPY
+copy ./test-folder/test-2.ttl  ./test-folder/test-3.ttl
+exists ./test-folder/test-2.ttl
+exists ./test-folder/test-3.ttl
+
+# ZIP
+zip ./test-folder/ ./test.zip
+exists ./test.zip
+unzip ./test.zip ./test-folder-2/
+exists ./test-folder-2/test-folder/test-3.ttl
+
+# DELETE
+delete ./test-folder/
+delete ./test-folder-2/
+delete ./test.zip
+notExists ./test-folder/
+
+# END
+
+Expected Output :
+
+ok put <./test-folder/test.ttl>
+ok move <./test-folder/test.ttl> to <./test-folder/test-2.ttl>
+ok notExists <./test-folder/test.ttl>
+ok contentsMatch <test-2.ttl>
+ok copy <./test-folder/test-2.ttl> to <./test-folder/test-3.ttl>
+ok exists <./test-folder/test-2.ttl
+ok exists <./test-folder/test-3.ttl
+ok zip <./test-folder/> to <./test.zip>
+ok exists <./test.zip
+ok unzip <./test.zip> to <./test-folder-2/>
+ok exists <./test-folder-2/test-folder/test-3.ttl
+ok delete <./test-folder/>
+ok delete <./test-folder-2/>
+ok delete <./test.zip>
+ok notExists <./test-folder/>

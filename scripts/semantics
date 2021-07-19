@@ -1,0 +1,30 @@
+add :Keisha a :Person; :age 39.
+add :Natalia a :Person.
+remove :Natalia
+add :Alejandro a :Person; :knows :Keisha.
+add :Spot a :Animal.
+
+match ? a :Person       
+# expected output - Keisha a Person. Alejandro a Person.
+
+match :Keisha :age
+# expected output - Keisha age 39.
+
+match :Alejandro ? :Keisha
+# expected output - Alejandro knows Keisha.
+
+match :Spot
+# expected output - Spot a Animal.
+
+match :Natalia
+# no output expected, we removed her
+
+# END
+
+
+ 
+   
+
+
+
+

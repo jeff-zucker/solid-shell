@@ -1,17 +1,170 @@
+const $rdf = require("rdflib");
 const fs = require("fs");
 const path = require("path");
-const FC=require("solid-file-client")
-const auth = require('solid-auth-cli');
-const fc = new FC(auth)
+const pr = require('./prefixes.js');
+const FC=require("../../solid-file-client/")
+const {SolidNodeClient} = require('solid-node-client');
+const client = new SolidNodeClient({parser:$rdf});
+const fc = new FC(client)
 const show = require("./sol.show.js");
 const shell = require('./sol.shell.js');
+const contentTypeLookup = require('mime-types').contentType;
 var verbosity = 2
 let credentials;
 
+const kb = $rdf.graph();
+const fetcher = $rdf.fetcher(kb,{fetch:client.fetch.bind(client)});
+let source = "https://example.com/";
+let rbase = credentials ? credentials.base : process.env.SOLID_REMOTE_BASE;
+const lbase = "file://" + process.cwd();
+
 module.exports.runSol = runSol;
 async function runSol(com,args) {
-  let fn,source,target,expected,opts;
+  let fn,target,expected,opts,turtle,q;
   return new Promise((resolve,reject)=>{  switch(com){
+
+        case "load" :
+          source = mungeURL(args[0]);
+          try {
+            fetcher.load(source).then(()=>{
+              log(`ok load <${unMunge(source)}>`);
+              resolve();
+            });
+          }
+          catch(err) {
+            log(`Could not load ${source} - ${err.status}`);
+          }
+          break;
+
+        case "putback" :
+        case "putBack" :
+          source = mungeURL(args[0]);
+          try {
+            fetcher.putBack(source).then(()=>{
+              log(`ok putback <${source}>.`);
+              resolve();
+            });
+          }
+          catch(err) {
+            log(`Could not putback ${source} - ${err.status}`);
+          }
+          break;
+
+        case "add" :
+          if(args[0].startsWith("[")) { 
+             source = args.shift()
+             source = source.replace(/^\[/,'').replace(/\]$/,'');
+             source = mungeURL( source );
+          }
+          turtle = "@prefix : <#> .\n" + args.join(' ');
+          try {
+            $rdf.parse(turtle, kb, source, "text/turtle");
+            resolve();
+          }
+          catch(err) {
+            log(`Could not load Turtle  - ${err}\n\n${turtle}`);
+            resolve();
+          }
+          break;
+
+        case "match" :
+          if(args[0].startsWith("[")) { 
+             source = args.shift()
+             source = source.replace(/^\[/,'').replace(/\]$/,'');
+             source = mungeURL( source );
+          }
+          q = pr.parseQuery($rdf,args,source);
+          let matches = "";
+          try {
+            for(var m of kb.match(q[0],q[1],q[2])){
+         	let s1 = pr.removePrefix(m.subject.value);
+		let p1 = pr.removePrefix(m.predicate.value);
+                p1 = p1.match(/type/) ?"a" :p1;
+		let o1 = pr.removePrefix(m.object.value)
+		matches += s1 + " " + p1 + " " + o1 + ".\n"
+            }
+            log(matches);
+            resolve(matches);
+          }
+          catch(err) {
+            log(`ERROR - ${err}`);
+            resolve();
+          }
+          break;
+
+        case "remove" :
+          if(args[0] && args[0].startsWith("[")) { 
+             source = args.shift()
+             source = source.replace(/^\[/,'').replace(/\]$/,'');
+             source = mungeURL( source );
+          }
+          q = pr.parseQuery($rdf,args,source)
+          try {
+            for(var m of kb.match(q[0],q[1],q[2])){
+		kb.remove(m);
+            }
+            resolve();
+          }
+          catch(err) {
+            log(`Could not remove: ${err}`);
+            resolve();
+          }
+          break;
+
+        case "replace" :
+          if(args[0].startsWith("[")) { 
+             source = args.shift()
+             source = source.replace(/^\[/,'').replace(/\]$/,'');
+             source = mungeURL( source );
+          }
+          let [s1,p1,o1,s2,p2,o2] = args;
+          q = pr.parseQuery($rdf,["?",p1,o1],source)
+          try {
+            for(var m of kb.match(q[0],q[1],q[2])){
+		kb.remove(m);
+                q = pr.parseQuery($rdf,["?",p2,o2],source)
+                kb.add( m.subject, q[1], q[2] );
+            }
+            resolve();
+          }
+          catch(err) {
+            log(`Could not replace: ${err}`);
+            resolve();
+          }
+          break;
+
+        case "query" :
+         try {
+/*
+[
+  '?o': NamedNode { termType: 'NamedNode', classOrder: 5, value: ':#P' },
+  '?p': NamedNode {
+    termType: 'NamedNode',
+    classOrder: 5,
+    value: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
+  },
+  '?s': NamedNode { termType: 'NamedNode', classOrder: 5, value: ':#K' }
+]
+*/
+           sparql = 'PREFIX : <#>\n' + args.join(' ');
+           const preparedQuery = $rdf.SPARQLToQuery( sparql, false, kb );
+           let wanted = preparedQuery.vars;
+           let results = [];
+console.log(sparql);
+           kb.query(preparedQuery, (stmts)=>{
+console.log("got ",stmts.length);
+             for(var s of stmts){
+                results.push([s.subject.value,s.predicate.value,s.object.value])
+             }
+             console.log(results);
+             resolve(results)
+           })
+         }
+         catch(err) {
+           log(`Could not run SPARQL  - ${err}\n\n${sparql}`);
+           resolve();
+         }
+         break;
 
         case "help" :
         case "h" :
@@ -37,19 +190,18 @@ async function runSol(com,args) {
             }, err => reject("error logging in : "+err) );
             break;
 
-        case "ls" :
-        case "read" :
+        case "get" :
             source = mungeURL(args[0]);
             if(!source) resolve();
             if( source.endsWith("/") ){
-                log("\n*** fetching from folder "+source)
-                fc.readFolder(source,{links:"include"}).then( folderObject => {
+                log("\nfetching from folder "+source)
+                fc.readFolder(source).then( folderObject => {
                     show("folder",folderObject,verbosity);
                     resolve()
                 },err=>{ do_err(err); resolve() })
             }
             else {
-                log("\n*** fetching from file "+source);
+                log("\nfetching from file "+source);
                 fc.readFile(source).then( fileBody =>{
                     show("file",fileBody,verbosity);
                     resolve()
@@ -60,31 +212,27 @@ async function runSol(com,args) {
         case "head" :
             source = mungeURL(args[0]);
             if(!source) resolve();
-            log("\n*** fetching head from "+source);
+            log("\nfetching head from "+source);
                 fc.readHead(source).then( headers => {
                     log(headers)
                     resolve()
                 },err=>{ do_err(err); resolve() })
             break;
 
-        case "cr" :
-        case "create" :
+        case "put" :
             source = mungeURL(args.shift())
             if(!source) resolve();
             let content = args.join(" ") || ""
-            let cType   = "text/turtle"
-            if(!source) resolve();
             if( source.endsWith("/") ){
-                log("\n*** creating folder "+source)
                 fc.createFolder(source).then( () => {
-                    log("folder created")
+                    log(`ok put <${unMunge(source)}>`)
                     resolve()
                 },err=>{ do_err(err); resolve() })
             }
             else {
-               log("\n*** creating file "+source)
-                fc.createFile(source,content,cType).then( () => {
-                    log("file created")
+               let cType = getContentType(source);
+               fc.createFile(source,content,cType).then( () => {
+                    log(`ok put <${unMunge(source)}>`)
                     resolve()
                 },err=>{ do_err(err); resolve() })
             }
@@ -95,16 +243,14 @@ async function runSol(com,args) {
             source = mungeURL(args[0]);
             if(!source) resolve();
             if( source.endsWith("/") ){
-                log("\n*** deleting folder "+source)
                 fc.deleteFolder(source).then( () => {
-                    log("folder deleted")
+                    log(`ok delete <${unMunge(source)}>`)
                     resolve()
                 },err=>{ do_err(err); resolve() })
             }
             else {
-                log("\n*** deleting file "+source)
                 fc.deleteFile(source).then( () => {
-                    log("file deleted\n");
+                    log(`ok delete <${unMunge(source)}>`)
                     resolve();
                 },err=>{ do_err(err); resolve() })
             }
@@ -112,8 +258,6 @@ async function runSol(com,args) {
 
         case "cp"   :
         case "copy" :
-        case "cps" :
-        case "cpt" :
             let opts = {}
             if(com==="cps") opts.merge="source"
             if(com==="cpt") opts.merge="target"
@@ -121,9 +265,30 @@ async function runSol(com,args) {
             target = mungeURL(args[1]);
             if(!source) resolve();
             if(!target) resolve();
-            log("\n*** copying "+source+" to "+target);
             fc.copy(source,target,opts).then( () => {
-                log("copied");
+                log(`ok copy <${unMunge(source)}> to <${unMunge(target)}>`);
+                resolve();
+            },err=>{ do_err(err); resolve() })
+            break;
+
+        case "zip" :
+            source = mungeURL(args[0]);
+            target = mungeURL(args[1]);
+            if(!source) resolve();
+            if(!target) resolve();
+            fc.createZipArchive(source,target,{links:"exclude"}).then( () => {
+                log(`ok zip <${unMunge(source)}> to <${unMunge(target)}>`);
+                resolve();
+            },err=>{ do_err(err); resolve() })
+            break;
+
+        case "unzip" :
+            source = mungeURL(args[0]);
+            target = mungeURL(args[1]);
+            if(!source) resolve();
+            if(!target) resolve();
+            fc.extractZipArchive(source,target).then( () => {
+                log(`ok unzip <${unMunge(source)}> to <${unMunge(target)}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -134,9 +299,8 @@ async function runSol(com,args) {
             target = mungeURL(args[1]);
             if(!source) resolve();
             if(!target) resolve();
-            log("\n*** moving "+source+" to "+target);
             fc.move(source,target).then( () => {
-                log("moved");
+                log(`ok move <${unMunge(source)}> to <${unMunge(target)}>`)
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -145,11 +309,12 @@ async function runSol(com,args) {
             source = mungeURL(args[0]);
             if(!source) resolve();
             fc.readFile(source).then( async (content) => {
-              let statements = content.split("\n")
+              let statements = content.split("\n\n")
               for(stmt of statements) {
+                  stmt = stmt.trim();
+                  if(stmt.match(/^#\s*END/)) break  // stop on END
                   if(stmt.length===0) continue       // ignore blank line
-                  if(stmt.startsWith(";")) continue  // ignore comment
-                  if(stmt.startsWith("END")) break  // stop on END
+                  if(stmt.startsWith("#")) continue  // ignore comment
                   let args=stmt.split(/\s+/)
                   let c = args.shift()
                   await runSol(c,args)
@@ -157,47 +322,62 @@ async function runSol(com,args) {
               resolve()
             },err=>{ do_err(err); resolve() })
             break;
+ 
+        case "base" :
+            source = mungeURL(args.shift());
+            credentials = credentials || {};
+            credentials.base = rbase = source;
+            log("Remote Base set to "+credentials.base);
+            resolve(credentials.base);
+            break;
 
-        case "t" :
-        case "test" :
-            let testType = args.shift() || ""
-            if(testType==="content"){
-                source = mungeURL(args.shift())
-                if(!source) resolve();
-                expected = args.join(" ")
-                if(!source) resolve();
-                fc.readFile(source).then( (got) => {
-                    source = path.basename(source)
-                    if(got===expected){
-                        console.log(`ok content for ${source}`)
-                    }
-                    else {
-                        console.log(`fail content for ${source}, got : ${got}`)
-                    }
-                    resolve();
-                },err=>{ log(err); resolve() })
+        case "exists" :
+            source = mungeURL(args[0])
+            fc.itemExists(source).then( (exists) => {
+                log((exists ?"ok exists" :"FAIL  exists")+" <"+unMunge(source))+">";
+                resolve(exists);
+            },err=>{ 
+                resolve(false) })
+            break;
+
+        case "notExists" :
+            source = mungeURL(args.shift())
+            fc.itemExists(source).then( (exists) => {
+                let notExists = exists ? false : true;
+                log( (notExists ?"ok notExists" :"FAIL notExists")+" <"+unMunge(source)+">");
+                resolve(notExists);
+            },err=>{ 
+              log(true)
+              resolve(true) 
+            })
+            break;
+
+        case "contentsMatch" :
+            source = mungeURL(args.shift())
+            expected = args.join(' ');
+            if(!source) {
+              log("No source file specified!");
+              resolve();
             }
-            else if(testType==="files"){
-                source = mungeURL(args.shift())
-                if(!source) resolve();
-                expected = args.join(" ")
-                if(!source) resolve();
-                fc.readFolder(source).then( (got) => {
-                    let files=[]
-                    for(g of got.files ){
-                      files.push( g.name)
-                    }
-                    files = files.join(' ')
-                    source = path.basename(source)
-                    if(files===expected){
-                        console.log(`ok files for ${source}`)
-                    }
-                    else {
-                        console.log(`fail files for ${source}, got : ${files} expected ${expected}`)
-                    }
-                    resolve();
-                },err=>{ log(err); resolve() })
-            }
+            if(isFolder(source)){
+              log("Can't use contentsMatch with a folder!");
+              resolve();
+            }           
+//            log(`Reading <${source}> ...`);
+            fc.readFile(source).then( (got) => {
+              source = path.basename(source)
+              let results = got.indexOf(expected)>-1;
+              if(results){
+                log(`ok contentsMatch <${unMunge(source)}>`)
+              }
+              else {
+                log(`FAIL contentsMatch <${unMunge(source)}, got: ${got}`)
+              }
+              resolve(results);
+            },err=>{
+              log("ERROR : Could not read "+source);
+              resolve() 
+            })
             break;
 
         default :
@@ -213,18 +393,26 @@ async function runSol(com,args) {
  *
  *
  */
+function unMunge(url) {
+    if(!url) return
+    const lregex =  new RegExp("\^"+lbase);
+    const rregex =  new RegExp("\^"+rbase);
+    url = url.replace( lregex, "." ).replace( rregex, "" );
+    return url
+}
 function mungeURL(url) {
     if(!url) return
     if( url.match(/^https:\/[^/]/) ){
          url = url.replace(/^https:\//,"https://")
     }
-    if( url.match(/^\//) && credentials && credentials.base ){
-        return credentials.base + url;
+    if( url.match(/^\//) && rbase ){
+        return rbase + url;
     }
     else if( url.match(/^\.\//) ){
-        return  "file://" + process.cwd() + url.replace(/\./,'')
+        return  lbase + url.replace(/\./,'');
     }
     else if( !url.match(/^(http|file|app)/) ){
+        console.log(url);
         console.log("URL must start with https:// or file:// or / or ./")
         return false
     }
@@ -239,12 +427,32 @@ function mungeURL(url) {
  * see solid-auth-cli for details
  */
 async function getCredentials(){
-    let creds = await auth.getCredentials();
-    creds.idp = creds.idp || await shell.prompt("idp? ")
-    creds.username = creds.username || await shell.prompt("username? ")
-    creds.base = creds.base || await shell.prompt("base folder? ")
-    creds.password = creds.password || await shell.prompt("password? ","mute")
-    return creds
+  const e = process.env
+  let creds = {};
+  if( e.SOLID_IDP && e.SOLID_USERNAME && e.SOLID_PASSWORD && e.SOLID_REMOTE_BASE) {
+    return {
+      idp:process.env.SOLID_IDP,
+      username:process.env.SOLID_USERNAME,
+      password:process.env.SOLID_PASSWORD,
+      base:process.env.SOLID_REMOTE_BASE,
+    }
+  }
+  else if( e.SOLID_CLIENT_ID && e.SOLID_CLIENT_SECRET 
+           && e.SOLID_REFRESH_TOKEN && e.SOLID_OIDC_ISSUER
+  ) {
+    return {
+      oidcIssuer:e.SOLID_OIDC_ISSUER,
+      refreshToken:e.SOLID_REFRESH_TOKEN,
+      clientId:e.SOLID_CLIENT_ID,
+      clientSecret:e.SOLID_CLIENT_SECRET,
+      base:process.env.SOLID_REMOTE_BASE,
+    }
+  }
+  let idp =  await shell.prompt("idp? ");
+  let username =  await shell.prompt("username? ");
+  let password = await shell.prompt("password? ","mute");
+  let base = await shell.prompt("remote base? ");
+  return { idp, username, password, base }
 }
 /**
  * login()
@@ -252,22 +460,28 @@ async function getCredentials(){
 async function login(){
     log("logging in ...")
     credentials = await getCredentials()
-    let session = await auth.login(credentials)
+    let session = await client.login(credentials)
     log(`logged in as <${session.webId}>`)
     return session
+}
+function isFolder(thing){
+  return thing.endsWith('/');
 }
 function do_err(err){
     if(verbosity==1||verbosity==2){
        console.log(`Error: ${(err.status||"unknown")} ${(err.statusText||"")}`)
     }
     if(verbosity==3){
-        console.log(err)
+      console.log(msg)
     }
 }
 function log(msg) {
     if(verbosity==2 || verbosity==3){
-        console.log(msg)
+      console.log(msg)
     }
+}
+console.error = (msg) => {
+     if(!msg.match(/fetchQueue/))  console.log(msg)
 }
 /*
 Verbosity
@@ -276,3 +490,20 @@ Verbosity
   2 report brief error messages and steps
   3 report full error messages and steps
 */
+
+
+function getContentType(path) {
+  if ( path.endsWith('/') 
+    || path.endsWith('.meta') 
+    || path.endsWith('.acl') 
+    || path.endsWith('.ttl') 
+  ){
+    return 'text/turtle';
+  }
+  else {
+    let extension = path.replace(/.*\./,'');
+    let cType = contentTypeLookup(extension);
+    return cType===extension ?'text/turtle':cType;
+  }
+}
+

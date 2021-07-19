@@ -1,0 +1,22 @@
+###
+# create, modify, and query an in-memory data store, save it to document
+###
+
+add [./test.ttl]
+  :Jun a :Person.
+  :Alejandro a :Person.
+  :Keisha a :Person.
+  :Spot a :Dog; :has :fleas.
+
+remove [./test.ttl]  :Jun
+
+# replace
+  ? :has :fleas. 
+  ? :has :ticks.
+
+match [./test.ttl]  ? a :Person
+
+match [./test.ttl] :Spot
+
+  
+
