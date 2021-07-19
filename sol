@@ -77,7 +77,7 @@ program
 //    .alias('rm')
     .description('delete file or recursively delete folder')
     .action( URL => {
-        sol.runSol("delete",[URL]).then(()=>{
+        sol.runSol("delete",URL).then(()=>{
         },err=>console.log(err));
     });
 program
