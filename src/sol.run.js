@@ -1,4 +1,6 @@
 const $rdf = require("rdflib");
+const semantics = require("./semantics.js");
+const {mungeURL,unMunge,isFolder,do_err,log,getContentType}=require('./utils.js')
 const fs = require("fs");
 const path = require("path");
 const pr = require('./prefixes.js');
@@ -11,18 +13,26 @@ const shell = require('./sol.shell.js');
 const contentTypeLookup = require('mime-types').contentType;
 var verbosity = 2
 let credentials;
-
+const LINK = {
+  CONTAINER: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
+  RESOURCE: '<http://www.w3.org/ns/ldp#Resource>; rel="type"'
+}
 const kb = $rdf.graph();
 const fetcher = $rdf.fetcher(kb,{fetch:client.fetch.bind(client)});
 let source = "https://example.com/";
 let rbase = credentials ? credentials.base : process.env.SOLID_REMOTE_BASE;
-const lbase = "file://" + process.cwd();
+process.env.SOLID_REMOTE_BASE = rbase;
 
 module.exports.runSol = runSol;
 async function runSol(com,args) {
-  let fn,target,expected,opts,turtle,q;
-  return new Promise((resolve,reject)=>{  switch(com){
-
+  let fn,target,expected,opts,turtle,q,content;
+  return new Promise(async (resolve,reject)=>{  switch(com){
+        case "load" :
+          source = mungeURL(args[0]);
+          log( await semantics.load(source) );
+          resolve();
+          break          
+/*
         case "load" :
           source = mungeURL(args[0]);
           try {
@@ -35,7 +45,7 @@ async function runSol(com,args) {
             log(`Could not load ${source} - ${err.status}`);
           }
           break;
-
+*/
         case "putback" :
         case "putBack" :
           source = mungeURL(args[0]);
@@ -68,11 +78,13 @@ async function runSol(com,args) {
           break;
 
         case "match" :
+/*
           if(args[0].startsWith("[")) { 
              source = args.shift()
              source = source.replace(/^\[/,'').replace(/\]$/,'');
              source = mungeURL( source );
           }
+*/
           q = pr.parseQuery($rdf,args,source);
           let matches = "";
           try {
@@ -191,7 +203,7 @@ console.log("got ",stmts.length);
             break;
 
         case "get" :
-            source = mungeURL(args[0]);
+            source = mungeURL(args);
             if(!source) resolve();
             if( source.endsWith("/") ){
                 log("\nfetching from folder "+source)
@@ -210,7 +222,7 @@ console.log("got ",stmts.length);
             break;
 
         case "head" :
-            source = mungeURL(args[0]);
+            source = mungeURL(args);
             if(!source) resolve();
             log("\nfetching head from "+source);
                 fc.readHead(source).then( headers => {
@@ -222,7 +234,7 @@ console.log("got ",stmts.length);
         case "put" :
             source = mungeURL(args.shift())
             if(!source) resolve();
-            let content = args.join(" ") || ""
+            content = args.join(" ") || ""
             if( source.endsWith("/") ){
                 fc.createFolder(source).then( () => {
                     log(`ok put <${unMunge(source)}>`)
@@ -238,21 +250,40 @@ console.log("got ",stmts.length);
             }
             break;
 
+        case "post" :
+            source = mungeURL(args.shift())
+            if(!source) resolve();
+            content = args.join(" ") || ""
+            if( source.endsWith("/") ){
+               fc.postItem(source,content,cType,LINK.CONTAINER).then( () => {
+                    log(`ok post <${unMunge(source)}>`)
+                    resolve()
+                },err=>{ do_err(err); resolve() })
+            }
+            else {
+               let cType = getContentType(source);
+               fc.postItem(source,content,cType,LINK.RESOURCE).then( () => {
+                    log(`ok put <${unMunge(source)}>`)
+                    resolve()
+                },err=>{ do_err(err); resolve() })
+            }
+            break;
+
         case "rm" :
         case "delete" :
             source = mungeURL(args[0]);
             if(!source) resolve();
             if( source.endsWith("/") ){
-                fc.deleteFolder(source).then( () => {
+                fc.deleteFolderRecursively(source).then( () => {
                     log(`ok delete <${unMunge(source)}>`)
                     resolve()
-                },err=>{ do_err(err); resolve() })
+                },err=>{ if(err.status !=404) do_err(err); resolve() })
             }
             else {
                 fc.deleteFile(source).then( () => {
                     log(`ok delete <${unMunge(source)}>`)
                     resolve();
-                },err=>{ do_err(err); resolve() })
+                },err=>{ if(err.status !=404) do_err(err); resolve() })
             }
             break;
 
@@ -309,7 +340,7 @@ console.log("got ",stmts.length);
             source = mungeURL(args[0]);
             if(!source) resolve();
             fc.readFile(source).then( async (content) => {
-              let statements = content.split("\n\n")
+              let statements = content.split("\n")
               for(stmt of statements) {
                   stmt = stmt.trim();
                   if(stmt.match(/^#\s*END/)) break  // stop on END
@@ -334,7 +365,7 @@ console.log("got ",stmts.length);
         case "exists" :
             source = mungeURL(args[0])
             fc.itemExists(source).then( (exists) => {
-                log((exists ?"ok exists" :"FAIL  exists")+" <"+unMunge(source))+">";
+                log((exists ?"ok exists" :"FAIL  exists")+" <"+unMunge(source)+">");
                 resolve(exists);
             },err=>{ 
                 resolve(false) })
@@ -352,7 +383,7 @@ console.log("got ",stmts.length);
             })
             break;
 
-        case "contentsMatch" :
+        case "matchText" :
             source = mungeURL(args.shift())
             expected = args.join(' ');
             if(!source) {
@@ -384,39 +415,6 @@ console.log("got ",stmts.length);
             if(com) log("can't parse last command")
             resolve();
     }});
-}
-/**
- * mungeURL()
- *
- * adds the base pod location to remote relative URLs (start with /)
- * adds the current working folder to local relative URLs (start with ./)
- *
- *
- */
-function unMunge(url) {
-    if(!url) return
-    const lregex =  new RegExp("\^"+lbase);
-    const rregex =  new RegExp("\^"+rbase);
-    url = url.replace( lregex, "." ).replace( rregex, "" );
-    return url
-}
-function mungeURL(url) {
-    if(!url) return
-    if( url.match(/^https:\/[^/]/) ){
-         url = url.replace(/^https:\//,"https://")
-    }
-    if( url.match(/^\//) && rbase ){
-        return rbase + url;
-    }
-    else if( url.match(/^\.\//) ){
-        return  lbase + url.replace(/\./,'');
-    }
-    else if( !url.match(/^(http|file|app)/) ){
-        console.log(url);
-        console.log("URL must start with https:// or file:// or / or ./")
-        return false
-    }
-    return url
 }
 /**
  * getCredentials()
@@ -464,22 +462,6 @@ async function login(){
     log(`logged in as <${session.webId}>`)
     return session
 }
-function isFolder(thing){
-  return thing.endsWith('/');
-}
-function do_err(err){
-    if(verbosity==1||verbosity==2){
-       console.log(`Error: ${(err.status||"unknown")} ${(err.statusText||"")}`)
-    }
-    if(verbosity==3){
-      console.log(msg)
-    }
-}
-function log(msg) {
-    if(verbosity==2 || verbosity==3){
-      console.log(msg)
-    }
-}
 console.error = (msg) => {
      if(!msg.match(/fetchQueue/))  console.log(msg)
 }
@@ -490,20 +472,3 @@ Verbosity
   2 report brief error messages and steps
   3 report full error messages and steps
 */
-
-
-function getContentType(path) {
-  if ( path.endsWith('/') 
-    || path.endsWith('.meta') 
-    || path.endsWith('.acl') 
-    || path.endsWith('.ttl') 
-  ){
-    return 'text/turtle';
-  }
-  else {
-    let extension = path.replace(/.*\./,'');
-    let cType = contentTypeLookup(extension);
-    return cType===extension ?'text/turtle':cType;
-  }
-}
-

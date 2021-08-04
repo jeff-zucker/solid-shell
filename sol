@@ -6,87 +6,103 @@ const shell   = require('./src/sol.shell.js'); // the prompts
  *  This file is the command-line interface
 */
 
-//zipcopy, unzip
-
 async function main() {
-    if(process.argv.length<3){
-        process.argv.push("shell");
-    }
-    else if( !process.argv[2].match(/(shell|run|help)/) ){
-        await sol.runSol("login")
-    }
-    program.parse(process.argv);
+  program.parse(process.argv);
 }
+program.option('-l,--login',"login");
 
 program
-    .name('sol')
-    .description('Command line, batch, and interactive shell tool for Solid')
-    .version("2.0.0")
-;  
-program
-    .command('shell')
-//    .alias('sh')
-    .description('run as an interactive shell')
-    .action( () => {
-        console.clear();
-        sol.runSol("help").then(()=>{
-          shell.sh()
-        },err=>console.log(err));
-    });
-program
-    .command('put <URL> <CONTENT...>')
+    .command('put <URL> [CONTENT...]')
     .description('create a file or folder')
-    .action( (URL,CONTENT) => {
+    .action( async (URL,CONTENT) => {
+        if( program.opts().login ) await sol.runSol("login")
         CONTENT = CONTENT.join(" ");
         sol.runSol("put",[URL,CONTENT]).then(()=>{
         },err=>console.log(err));
     });
 program
+    .command('post <URL> [CONTENT...]')
+    .description('create a file or folder')
+    .action( async (URL,CONTENT) => {
+        if( program.opts().login ) await sol.runSol("login")
+        CONTENT = CONTENT.join(" ");
+        sol.runSol("post",[URL,CONTENT]).then(()=>{
+        },err=>console.log(err));
+    });
+program
     .command('head <URL>')
     .description('show headers for a file or folder')
-    .action( (URL) => {
-        sol.runSol("head",[URL]).then(()=>{
+    .action( async (URL) => {
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("head",URL).then(()=>{
         },err=>console.log(err));
     });
 program
     .command('get <URL>')
-//    .alias('ls')
     .description('show contents of a file or folder')
-    .action( (URL) => {
-        sol.runSol("get",[URL]).then(()=>{
+    .action( async (URL) => {
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("get",URL).then(()=>{
         },err=>console.log(err));
     });
 program
     .command('copy <oldURL> <newURL>')
-//    .alias('cp')
     .description('copy a file or recursively copy a folder')
-    .action( (oldURL,newURL) => {
+    .action( async (oldURL,newURL) => {
+        if( program.opts().login ) await sol.runSol("login")
         sol.runSol("copy",[oldURL,newURL]).then(()=>{
         },err=>console.log(err));
     });
 program
     .command('move <oldURL> <newURL>')
-//    .alias('mv')
     .description('move a file or recursively move a folder')
-    .action( (oldURL,newURL) => {
+    .action( async (oldURL,newURL) => {
+        if( program.opts().login ) await sol.runSol("login")
         sol.runSol("mv",[oldURL,newURL]).then(()=>{
         },err=>console.log(err));
     });
 program
-    .command('delete <URL...>')
-//    .alias('rm')
+    .command('delete <URL>')
     .description('delete file or recursively delete folder')
-    .action( URL => {
+    .action( async (URL) => {
+        if( program.opts().login ) await sol.runSol("login")
         sol.runSol("delete",URL).then(()=>{
+        },err=>console.log(err));
+    });
+program
+    .command('zip <folderURL> <zipFileURL>')
+    .description('create a zip archive')
+    .action( async (folderURL,zipFileURL) => {
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("zip",folderURL,zipFileURL).then(()=>{
+        },err=>console.log(err));
+    });
+program
+    .command('unzip <zipFileURL> <folderURL>')
+    .description('extract a zip archive')
+    .action( async (zipFileURL,folderURL) => {
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("unzip",zipFileURL,folderURL).then(()=>{
         },err=>console.log(err));
     });
 program
     .command('run <scriptFile>')
     .description('batch run commands in a script file')
-    .action( (scriptFile) => {
+    .action( async (scriptFile) => {
+        if( program.opts().login ) await sol.runSol("login")
         sol.runSol("run",[scriptFile]).then(()=>{
         },err=>console.log(err) )
     },err=>console.log(err));
+program
+    .command('shell')
+    .description('run as an interactive shell')
+    .action( async () => {
+        console.clear();
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("help").then(()=>{
+          shell.sh()
+        },err=>console.log(err));
+    });
 
 main();
 

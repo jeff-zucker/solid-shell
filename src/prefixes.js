@@ -54,17 +54,13 @@ const prefixes = {
           if(prefixes[prefix]) return prefixes[prefix] + term;
         }
         function parseQuery($rdf,args,source){
-// console.log(args)
           let [s,p,o] = args
+          if(s) s = s.replace(/\.$/,'');
+          if(p) p = p.replace(/\.$/,'');
+          if(o) o = o.replace(/\.$/,'');
           s = s && s==="?" ?null :s;
           p = p && p==="?" ?null :p;
           o = o && o==="?" ?null :o;
-/*
-          s = s || null;
-          p = p || null;
-          o = o || null;
-console.log(s,p,o)
-*/
           if(s) s = $rdf.sym(getPrefix(s,source));
           if(p) {
             if(p==="a") p = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";

@@ -1,5 +1,0 @@
-put ./1.ttl @prefix : <#>. :X a :Y.
-put ./2.ttl @prefix : <#>. :Z a :Y.
-load ./1.ttl
-load ./2.ttl
-match ? a :Y
