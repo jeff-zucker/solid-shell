@@ -39,18 +39,9 @@ module.exports = function(type,thing,verbosity){
 Solid Shell - a command line, batch processor, & interactive shell for Solid
 ------------------------------------------------------------------------------
        Document Management  put, get, head, copy, move, delete, zip, unzip
-       Semantic Management  load, putBack, add, remove, match
-  Testing/Batch Processing  run, exists, notExists, matchText, verbosity
+  Testing/Batch Processing  run, exists, notExists, matchText
               Connectivity  login, base
          Interactive Shell  help, quit
-
-  All commands work on local or remote Pods and on serverless local files.
-  Use ./ for the local current working directory and / for the root of a
-  Pod you have defined by setting the "base".
-
-  > copy ./foo/ /bar/            # recursively copies from local to Pod
-  > copy /foo/ ./bar/            # recursively copies from Pod to local
-  > copy /foo/ https://bar/baz/  # recursively copies from one Pod to another
 ------------------------------------------------------------------------------`
       ,verbosity)
       break

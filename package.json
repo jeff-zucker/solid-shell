@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "sol",
   "repository": "https://github.com/jeff-zucker/solid-shell.git",
   "author": "Jeff Zucker",
@@ -23,6 +23,7 @@
     "mime-types": "^2.1.31",
     "rdflib": "^2.2.5",
     "readline-sync": "^1.4.10",
+    "solid-file-client": "^2.1.0",
     "solid-namespace": "^0.5.1",
     "solid-node-client": "^2.1.0"
   }
