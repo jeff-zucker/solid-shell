@@ -34,7 +34,7 @@ program
     .description('show headers for a file or folder')
     .action( async (URL) => {
         if( program.opts().login ) await sol.runSol("login")
-        sol.runSol("head",URL).then(()=>{
+        sol.runSol("head",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -42,7 +42,7 @@ program
     .description('show contents of a file or folder')
     .action( async (URL) => {
         if( program.opts().login ) await sol.runSol("login")
-        sol.runSol("get",URL).then(()=>{
+        sol.runSol("get",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -66,7 +66,7 @@ program
     .description('delete file or recursively delete folder')
     .action( async (URL) => {
         if( program.opts().login ) await sol.runSol("login")
-        sol.runSol("delete",URL).then(()=>{
+        sol.runSol("delete",[URL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -74,7 +74,7 @@ program
     .description('create a zip archive')
     .action( async (folderURL,zipFileURL) => {
         if( program.opts().login ) await sol.runSol("login")
-        sol.runSol("zip",folderURL,zipFileURL).then(()=>{
+        sol.runSol("zip",[folderURL,zipFileURL]).then(()=>{
         },err=>console.log(err));
     });
 program
@@ -82,7 +82,7 @@ program
     .description('extract a zip archive')
     .action( async (zipFileURL,folderURL) => {
         if( program.opts().login ) await sol.runSol("login")
-        sol.runSol("unzip",zipFileURL,folderURL).then(()=>{
+        sol.runSol("unzip",[zipFileURL,folderURL]).then(()=>{
         },err=>console.log(err));
     });
 program
