@@ -8,7 +8,7 @@ Solid-shell (hereafter called Sol) is a nodejs tool for accessing Solid data tha
 
 Here's an overview of methods :
 
-         Document Management  put,post,patch get,head,copy,move,delete,zip,unzip
+         Document Management  put,post,patch get,head,options,copy,move,delete,zip,unzip
     Testing/Batch Processing  run,exists,notExists,matchText,statusOnly,verbosity
                 Connectivity  login, base
            Interactive Shell  shell, help, quit
