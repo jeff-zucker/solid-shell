@@ -13,10 +13,10 @@ Here's an overview of methods :
                 Connectivity  login, base
            Interactive Shell  shell, help, quit
 
-**NOTE : This App is in transition!**  Everything in the documentation should work, but I may be changing the API slightly in the coming weeks.  I'll remove this note when finalized and post changes here at the top:**
+## NOTE : This App is in transition!**  Everything in the documentation should work, but I may be changing the API slightly in the coming weeks.  I'll remove this note when finalized and post changes here at the top:
 
 * There are now two methods to delete : simple **delete**  (for a file or an empty folder) and **recursiveDelete** for an entire folder tree.
-* Added methods for patch, allow, options
+* Added methods for patch and options
 * Added statusOnly to show e.g. 200 on a "get" rater than the full body
 
 ## Installation

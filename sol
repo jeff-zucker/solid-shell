@@ -30,6 +30,24 @@ program
         },err=>console.log(err));
     });
 program
+    .command('patch <URL> [CONTENT...]')
+    .description('create a file or folder')
+    .action( async (URL,CONTENT) => {
+        if( program.opts().login ) await sol.runSol("login")
+        CONTENT = CONTENT.join(" ");
+        sol.runSol("patch",[URL,CONTENT]).then(()=>{
+        },err=>console.log(err));
+    });
+program
+    .command('options <URL>')
+    .description('create a file or folder')
+    .action( async (URL,CONTENT) => {
+        if( program.opts().login ) await sol.runSol("login")
+        CONTENT = CONTENT.join(" ");
+        sol.runSol("options").then(()=>{
+        },err=>console.log(err));
+    });
+program
     .command('head <URL>')
     .description('show headers for a file or folder')
     .action( async (URL) => {
