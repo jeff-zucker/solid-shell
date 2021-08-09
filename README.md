@@ -7,12 +7,12 @@ a command-line tool, batch processor, and interactive shell for managing Solid d
 Solid-shell (hereafter called Sol) is a nodejs tool for accessing Solid data that may be run as an interactive shell, as a batch processor, and on the command line.  It provides a front-end for [Solid-File-Client](https://github.com/jeff-zucker/solid-file-client) and supports moving and copying files on remote pods, on local file systems, and between the two.
 
 Here's an overview of methods :
-
-         Document Management  put,post,patch get,head,options,copy,move,delete,zip,unzip
-    Testing/Batch Processing  run,exists,notExists,matchText,statusOnly,verbosity
-                Connectivity  login, base
-           Interactive Shell  shell, help, quit
-
+```text
+     Document Management  put,post,patch get,head,options,copy,move,delete,zip,unzip
+Testing/Batch Processing  run,exists,notExists,matchText,statusOnly,verbosity
+            Connectivity  login, base
+       Interactive Shell  shell, help, quit
+```
 ## NOTE : This App is in transition!**  Everything in the documentation should work, but I may be changing the API slightly in the coming weeks.  I'll remove this note when finalized and post changes here at the top:
 
 * There are now two methods to delete : simple **delete**  (for a file or an empty folder) and **recursiveDelete** for an entire folder tree.
