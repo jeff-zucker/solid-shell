@@ -39,7 +39,7 @@ To install via the github repo
 For one-off commands, you can run sol commands directly. For example this
 recursively uploads a folder to a Solid POD.
 ```
-   sol copy ./someLocalPath/ /someRemotePath/
+   sol --login copy ./someLocalPath/ /someRemotePath/
 ```
 Enter sol -h to see a full list of commands available from the command line.
 
