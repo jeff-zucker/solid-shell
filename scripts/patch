@@ -1,24 +1,43 @@
 verbosity 0
-  base ./
+  put /test/good.ttl <#A> a <#foo>.
   put /test/bad.ttl <#A> junk junk.
 verbosity 1
+
+#!Delete non-existent triple
+  patch /test/good.ttl DELETE DATA { <#X> a <#Baz> }
+
+#!Patch on Container
+  patch /test/ INSERT DATA { <#X> a <#Baz> }
+
+# END
+#!Syntax error in patch [400 in all implementations]
+  patch /test/good.ttl INSERT DATA { <#X> junk <#Baz> }
+
+#!Syntax error in file to be patched  [400 in all implementations]
+  patch /test/bad.ttl INSERT DATA  <#A> a <#foo>.
+
+
+
 
 patch /test/x.ttl INSERT DATA { <#A> a <#Foo> }
 patch /test/x.ttl INSERT DATA { <#B> a <#Foo> }
 patch /test/x.ttl INSERT DATA { <#C> a <#Bar> }
 patch /test/x.ttl DELETE DATA { <#B> a <#Foo> }
 
-!Delete non-existent triple
-  patch /test/x.ttl DELETE DATA { <#X> a <#Baz> }
-
-!Patch on Container
-  patch /test/ INSERT DATA { <#X> a <#Baz> }
-
 !Syntax error in patch
-  patch /test/x.ttl DELETE DATA { <#X> junk <#Baz> }
+   400 - all
 
 !Syntax error in file to be patched
-  patch /test/bad.ttl INSERT DATA { <#X> junk <#Baz> }
+   400 CSS
+   500 NSS & SRF
+   201 ESS
 
+!Patch on non-rdf resource
 
+!Delete non-existent triple
+!Patch on Container
 
+CSS 400 205 400 501 205 409
+SRF 400 200 500 409 409 409
+ESS 400 201 201 405 201 204
+NSS 400 200 500 500 409 500
