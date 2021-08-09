@@ -63,7 +63,15 @@ program
     });
 program
     .command('delete <URL>')
-    .description('delete file or recursively delete folder')
+    .description('delete a file or an empty folder')
+    .action( async (URL) => {
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("delete",[URL]).then(()=>{
+        },err=>console.log(err));
+    });
+program
+    .command('recursiveDelete <URL>')
+    .description('recursively delete a folder tree')
     .action( async (URL) => {
         if( program.opts().login ) await sol.runSol("login")
         sol.runSol("delete",[URL]).then(()=>{

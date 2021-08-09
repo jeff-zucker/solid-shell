@@ -1,0 +1,35 @@
+verbosity 0
+recursiveDelete /test/
+verbosity 1
+#put /test/sub1/
+post /test/sub1/sub2/
+put /test/sub1/sub2/sub3/x.txt hello world
+post /test/sub1/sub2/y.ttl <#A> a <#Foo>.
+get /test/sub1/sub2/
+get /test/sub1/sub2/y.ttl
+head /test/sub1/sub2/
+head /test/sub1/sub2/y.ttl
+options /test/sub1/sub2/y.ttl
+patch /test/sub1/sub2/y.ttl INSERT DATA { <#A> a <#Bar> }
+delete /test/sub1/sub2/sub3/x.txt
+delete /test/sub1/sub2/sub3/
+
+# END
+zip /test/sub1/ /test/zipFolder/archive.zip
+unzip /test/zipFolder/archive.zip /test/zipFolder/
+
+
+copy /public/test-folder/test/ /public/test-folder/b/
+get /public/test-folder/test/ 
+get /public/test-folder/b/
+
+move  /public/test-folder/test/ /public/test-folder/c/
+get /public/test-folder/c/ 
+
+
+//get /public/test-folder/b/test1/x.txt
+//get /public/test-folder/c/test1/x.txt
+//get /public/test-folder/d/test1/x.txt
+
+
+recursiveDelete /public/test-folder/test/

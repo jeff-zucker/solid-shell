@@ -1,0 +1,30 @@
+statusOnly true
+
+!
+! CSS
+verbosity 0
+base http://localhost:3000/jeff/test-folder/writable
+run ./scripts/should-fail
+
+!
+! SOLID-REST (LOCAL FILE SYSTEM)
+verbosity 0
+base ./test-folder/writable
+run ./scripts/should-fail
+
+!
+! LOGIN
+login
+
+! ESS
+verbosity 0
+base https://pod.inrupt.com/jeff-zucker/public
+run ./scripts/should-fail
+
+!
+! NSS
+verbosity 0
+base https://jeff-zucker.solidcommunity.net
+run ./scripts/should-fail
+
+

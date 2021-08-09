@@ -1,4 +1,4 @@
-const $rdf = require("rdflib");
+const $rdf = global.$rdf = require("rdflib");
 const semantics = require("./semantics.js");
 const {mungeURL,unMunge,isFolder,do_err,log,getContentType}=require('./utils.js')
 const fs = require("fs");
@@ -22,10 +22,11 @@ const fetcher = $rdf.fetcher(kb,{fetch:client.fetch.bind(client)});
 let source = "https://example.com/";
 let rbase = credentials ? credentials.base : process.env.SOLID_REMOTE_BASE;
 process.env.SOLID_REMOTE_BASE = rbase;
+let statusOnly = false;
 
 module.exports.runSol = runSol;
 async function runSol(com,args) {
-  let fn,target,expected,opts,turtle,q,content;
+  let fn,target,expected,opts,turtle,q,content,type;
   return new Promise(async (resolve,reject)=>{  switch(com){
         case "load" :
           source = mungeURL(args[0]);
@@ -202,51 +203,130 @@ console.log("got ",stmts.length);
             }, err => reject("error logging in : "+err) );
             break;
 
+function showStatus( response, msg ){
+  if(verbosity > 0) log( response.status + " " + msg );
+//  log( response.status + " " + response.statusText + ", " + msg );
+}
+
+// REST METHODS
         case "get" :
-            source = mungeURL(args);
+            source = mungeURL(args[0]);
             if(!source) resolve();
-            if( source.endsWith("/") ){
-                log("\nfetching from folder "+source)
+            type = source.endsWith("/") ?"Container" :"Resource"
+            if(statusOnly){
+              fc.fetch(source).then( (response) => {
+                showStatus(response,`GET ${type}`);
+                resolve()
+              },(response)=>{
+                showStatus(response,`GET ${type} ${unMunge(source)}`);
+                resolve()
+              })
+            }
+            else if( source.endsWith("/") ){
+//                log("\nfetching from folder "+source)
                 fc.readFolder(source).then( folderObject => {
                     show("folder",folderObject,verbosity);
                     resolve()
-                },err=>{ do_err(err); resolve() })
+                },err=>{
+                  showStatus(err,"get "+source);
+                  resolve()
+                })
             }
             else {
                 log("\nfetching from file "+source);
                 fc.readFile(source).then( fileBody =>{
                     show("file",fileBody,verbosity);
                     resolve()
-                },err=>{ do_err(err); resolve() })
+                },err=>{
+                  showStatus(err,"get "+source);
+                  resolve()
+                })
             }
             break;
 
         case "head" :
-            source = mungeURL(args);
+            source = mungeURL(args.shift());
             if(!source) resolve();
-            log("\nfetching head from "+source);
-                fc.readHead(source).then( headers => {
+            type = source.endsWith("/") ?"Container" :"Resource"
+            if(statusOnly){
+              fc.head(source).then( response => {
+                showStatus(response,"HEAD "+type);
+                resolve()
+              },err=>{
+                showStatus(err,"head "+source);
+                resolve()
+              })
+            }
+            else {
+              log("\nfetching head from "+source);
+              fc.readHead(source).then( headers => {
                     log(headers)
                     resolve()
-                },err=>{ do_err(err); resolve() })
+              },err=>{ 
+                 showStatus(err,"head "+source);
+                 resolve() 
+              })
+            }
+            break;
+
+        case "options" :
+            source = mungeURL(args.shift());
+            if(!source) resolve();
+            type = source.endsWith("/") ?"Container" :"Resource"
+            if(statusOnly){
+              fc.options(source).then( response => {
+                showStatus(response,"OPTIONS "+type);
+                resolve()
+              },err=>{
+                showStatus(err,"OPTIONS "+source);
+                resolve()
+              })
+            }
+            else {
+              fc.options(source).then( options => {
+                    log(options)
+                    resolve()
+              },err=>{ 
+                 showStatus(err,"OPTIONS "+source);
+                 resolve() 
+              })
+            }
             break;
 
         case "put" :
             source = mungeURL(args.shift())
             if(!source) resolve();
             content = args.join(" ") || ""
+            type = source.endsWith("/") ?"Container" :"Resource"
+            if(statusOnly){
+              let cType = getContentType(source);
+              fc.put(source,{body:content,headers:{"content-type":cType}}).then( response => {
+                showStatus(response,`PUT ${type}`);
+                resolve()
+              },response=>{
+                showStatus(response,`PUT ${type} <${unMunge(source)}>`);
+                resolve()
+              })
+              break;
+            }
             if( source.endsWith("/") ){
-                fc.createFolder(source).then( () => {
-                    log(`ok put <${unMunge(source)}>`)
-                    resolve()
-                },err=>{ do_err(err); resolve() })
+              fc.createFolder(source).then( (r) => {
+                showStatus(r,"put "+source)
+                resolve()
+              },err=>{ 
+                showStatus(err,"put "+source)
+                resolve() 
+              })
             }
             else {
-               let cType = getContentType(source);
-               fc.createFile(source,content,cType).then( () => {
-                    log(`ok put <${unMunge(source)}>`)
-                    resolve()
-                },err=>{ do_err(err); resolve() })
+              let cType = getContentType(source);
+              fc.createFile(source,content,cType).then( (r) => {
+                showStatus(r,"put "+source)
+                resolve()
+              },err=>{ 
+                showStatus(err,"put "+source)
+                resolve() 
+              })
             }
             break;
 
@@ -254,36 +334,103 @@ console.log("got ",stmts.length);
             source = mungeURL(args.shift())
             if(!source) resolve();
             content = args.join(" ") || ""
+            type = source.endsWith("/") ?"Container" :"Resource"
+            if(statusOnly){
+              let cType = getContentType(source);
+              let link = source.endsWith("/") ?LINK.CONTAINER :LINK.RESOURCE
+              fc.postItem(source,content,cType,link).then( (response) => {
+                showStatus(response,`POST ${type}`);
+                resolve()
+              },response=>{
+                showStatus(response,`POST ${type}`);
+                resolve()
+              })
+              break;
+            }
             if( source.endsWith("/") ){
-               fc.postItem(source,content,cType,LINK.CONTAINER).then( () => {
-                    log(`ok post <${unMunge(source)}>`)
-                    resolve()
-                },err=>{ do_err(err); resolve() })
+               fc.postItem(source,content,cType,LINK.CONTAINER).then( (response) => {
+                  showStatus(response,"post "+source);
+                  resolve();
+               },err=>{ 
+                 showStatus(response,"post "+source);
+                 resolve();
+               });
             }
             else {
                let cType = getContentType(source);
                fc.postItem(source,content,cType,LINK.RESOURCE).then( () => {
-                    log(`ok put <${unMunge(source)}>`)
-                    resolve()
-                },err=>{ do_err(err); resolve() })
+                 log(`ok put <${unMunge(source)}>`)
+                 resolve()
+               },err=>{ do_err(err); resolve() })
             }
+            break;
+
+        case "patch" :
+            source = mungeURL(args.shift())
+            if(!source) resolve();
+            content = args.join(" ") || ""
+            let cType = getContentType(source);
+            fc.patch(source, {
+              body: content,
+              method: 'PATCH',
+              headers: {
+                "Content-type" : "application/sparql-update",
+              }
+            }).then( (response) => {
+              showStatus(response,`PATCH Resource`);
+              resolve()
+            },response=>{
+              showStatus(response,`PATCH Resource`);
+              resolve()
+            })
             break;
 
         case "rm" :
         case "delete" :
             source = mungeURL(args[0]);
             if(!source) resolve();
+            type = source.endsWith("/") ?"Container" :"Resource"
             if( source.endsWith("/") ){
-                fc.deleteFolderRecursively(source).then( () => {
-                    log(`ok delete <${unMunge(source)}>`)
+                fc.delete(source).then( (response) => {
+                    showStatus(response,`DELETE ${type}`);
                     resolve()
-                },err=>{ if(err.status !=404) do_err(err); resolve() })
+                },response=>{ 
+                    showStatus(response,`DELETE ${type}`);
+                    resolve()
+                })
             }
             else {
-                fc.deleteFile(source).then( () => {
-                    log(`ok delete <${unMunge(source)}>`)
+                fc.deleteFile(source).then( (response) => {
+                    showStatus(response,`DELETE ${type}`);
                     resolve();
-                },err=>{ if(err.status !=404) do_err(err); resolve() })
+                },response=>{ 
+                    showStatus(response,`DELETE ${type}`);
+                    resolve()
+                })
+            }
+            break;
+
+        case "recursiveDelete" :
+            source = mungeURL(args[0]);
+            if(!source) resolve();
+            if( source.endsWith("/") ){
+                fc.deleteFolderRecursively(source).then( (response) => {
+                  if(verbosity>0)
+                    showStatus({status:"",statusText:"ok"},"recursiveDelete "+source);
+                  resolve()
+                },err=>{ 
+                    if(err.status !=404) showStatus(err,"delete "+source);
+                    resolve()
+                })
+            }
+            else {
+                fc.deleteFile(source).then( (response) => {
+                    showStatus(response,"delete "+source);
+                    resolve();
+                },err=>{
+                  if(err.status !=404) showStatus(err,"delete "+source);
+                  resolve()
+                })
             }
             break;
 
@@ -308,7 +455,7 @@ console.log("got ",stmts.length);
             if(!source) resolve();
             if(!target) resolve();
             fc.createZipArchive(source,target,{links:"exclude"}).then( () => {
-                log(`ok zip <${unMunge(source)}> to <${unMunge(target)}>`);
+                log(`ok zip to <${unMunge(target)}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -319,7 +466,7 @@ console.log("got ",stmts.length);
             if(!source) resolve();
             if(!target) resolve();
             fc.extractZipArchive(source,target).then( () => {
-                log(`ok unzip <${unMunge(source)}> to <${unMunge(target)}>`);
+                log(`ok unzip to <${unMunge(target)}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -346,6 +493,10 @@ console.log("got ",stmts.length);
                   if(stmt.match(/^#\s*END/)) break  // stop on END
                   if(stmt.length===0) continue       // ignore blank line
                   if(stmt.startsWith("#")) continue  // ignore comment
+                  if(stmt.startsWith("!")){          // echo ! lines
+                    console.log( stmt.replace(/^\!\s*/,'') );
+                    continue;
+                  }
                   let args=stmt.split(/\s+/)
                   let c = args.shift()
                   await runSol(c,args)
@@ -354,16 +505,32 @@ console.log("got ",stmts.length);
             },err=>{ do_err(err); resolve() })
             break;
  
+        case "statusOnly" :
+            statusOnly = args.shift().trim() === "true" ?true :false;
+            resolve();
+            break;
+
         case "base" :
             source = mungeURL(args.shift());
+            source = source.replace(/\/$/,'');
             credentials = credentials || {};
-            credentials.base = rbase = source;
-            log("Remote Base set to "+credentials.base);
+            credentials.base= rbase= process.env.SOLID_REMOTE_BASE= source;
+            if(verbosity>0)
+              log("Remote Base set to "+credentials.base);
             resolve(credentials.base);
             break;
 
         case "exists" :
             source = mungeURL(args[0])
+/*
+            fc.head(source).then( r => {
+              log(`${r.status } head <${source}>`)
+              resolve()
+            },err=>{
+              log(`${err.status } head <${source}>`)
+              resolve()
+            })
+*/
             fc.itemExists(source).then( (exists) => {
                 log((exists ?"ok exists" :"FAIL  exists")+" <"+unMunge(source)+">");
                 resolve(exists);

@@ -1,0 +1,24 @@
+verbosity 0
+  base ./
+  put /test/bad.ttl <#A> junk junk.
+verbosity 1
+
+patch /test/x.ttl INSERT DATA { <#A> a <#Foo> }
+patch /test/x.ttl INSERT DATA { <#B> a <#Foo> }
+patch /test/x.ttl INSERT DATA { <#C> a <#Bar> }
+patch /test/x.ttl DELETE DATA { <#B> a <#Foo> }
+
+!Delete non-existent triple
+  patch /test/x.ttl DELETE DATA { <#X> a <#Baz> }
+
+!Patch on Container
+  patch /test/ INSERT DATA { <#X> a <#Baz> }
+
+!Syntax error in patch
+  patch /test/x.ttl DELETE DATA { <#X> junk <#Baz> }
+
+!Syntax error in file to be patched
+  patch /test/bad.ttl INSERT DATA { <#X> junk <#Baz> }
+
+
+

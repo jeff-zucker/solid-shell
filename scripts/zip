@@ -1,8 +1,0 @@
-put ./test-folder/test-file.txt
-zip ./test-folder/ ./test-folder.zip
-unzip ./test-folder.zip ./test-folder2/
-exists ./test-folder2/test-folder/test-file.txt
-delete ./test-folder/ 
-delete ./test-folder2/
-delete ./test-folder.zip
-notExists ./test-folder.zip

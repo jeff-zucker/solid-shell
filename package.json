@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": "sol",
   "repository": "https://github.com/jeff-zucker/solid-shell.git",
   "author": "Jeff Zucker",
@@ -17,8 +17,8 @@
     "sol": "./sol"
   },
   "dependencies": {
-    "@solid-rest/core": "^2.1.0",
-    "@solid-rest/file": "^2.1.1",
+    "@solid-rest/core": "^2.1.1",
+    "@solid-rest/file": "^2.1.2",
     "commander": "^7.2.0",
     "mime-types": "^2.1.31",
     "rdflib": "^2.2.5",

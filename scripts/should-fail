@@ -1,0 +1,25 @@
+verbosity 0
+put /test/x.ttl <#A> a <#Foo>.
+verbosity 1
+
+! *** Post to .acl
+post /test/foo.acl junk
+
+! ** put/post without content-type
+put ./test/foo
+post ./test/foo
+
+! *** Patch delete non-existent triple
+patch /test/x.ttl DELETE DATA { <#X> a <#Bar> }
+
+! *** Delete on non-empty container
+delete /test/
+
+! *** Delete/get/head/ on non-existent resource
+delete /does-not-exist.txt
+get /does-not-exist.txt
+head /does-not-exist.txt
+
+
+
+

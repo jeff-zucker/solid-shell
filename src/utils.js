@@ -1,9 +1,9 @@
 const contentTypeLookup = require('mime-types').contentType;
 const lbase = "file://" + process.cwd();
-let rbase = process.env.SOLID_REMOTE_BASE;
 
 function unMunge(url) {
     if(!url) return
+    let rbase = process.env.SOLID_REMOTE_BASE;
     const lregex =  new RegExp("\^"+lbase);
     const rregex =  new RegExp("\^"+rbase);
     url = url.replace( lregex, "." ).replace( rregex, "" );
@@ -18,6 +18,7 @@ function unMunge(url) {
  *
  */
 function mungeURL(url) {
+    let rbase = process.env.SOLID_REMOTE_BASE;
     if(!url) return
     if( url.match(/^https:\/[^/]/) ){
          url = url.replace(/^https:\//,"https://")
@@ -45,7 +46,7 @@ function do_err(err){
 }
 function log(msg) {
 //    if(verbosity==2 || verbosity==3){
-      console.log(msg)
+      console.log("  "+msg)
 //    }
 }
 function getContentType(path) {
@@ -59,7 +60,7 @@ function getContentType(path) {
   else {
     let extension = path.replace(/.*\./,'');
     let cType = contentTypeLookup(extension);
-    return cType===extension ?'text/turtle':cType;
+    return cType===extension ?null :cType;
   }
 }
 
