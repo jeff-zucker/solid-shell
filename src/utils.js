@@ -1,5 +1,5 @@
 const contentTypeLookup = require('mime-types').contentType;
-const lbase = "file://" + process.cwd();
+let lbase = process.platform==="win32" ? `file:///${process.cwd().replace(/\\/g,'/')}` : "file://" + process.cwd();
 
 function unMunge(url) {
     if(!url) return

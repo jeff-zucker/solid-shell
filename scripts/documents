@@ -1,3 +1,5 @@
+recursiveDelete ./test-folder/
+
 put ./test-folder/test.ttl "This is a test."
 
 move  ./test-folder/test.ttl  ./test-folder/test-2.ttl
@@ -14,8 +16,8 @@ exists ./test.zip
 unzip ./test.zip ./test-folder-2/
 exists ./test-folder-2/test-folder/test-3.ttl
 
-delete ./test-folder/
-delete ./test-folder-2/
+recursiveDelete ./test-folder/
+recursiveDelete ./test-folder-2/
 delete ./test.zip
 
 notExists ./test-folder/
