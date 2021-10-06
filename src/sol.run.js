@@ -434,6 +434,21 @@ function showStatus( response, msg ){
             }
             break;
 
+        case "emptyFolder" :
+            source = mungeURL(args[0]);
+            if(!source) resolve();
+            if( source.endsWith("/") ){
+                fc.deleteFolderContents(source).then( (response) => {
+                  if(verbosity>0)
+                    showStatus({status:"",statusText:"ok"},"emptyFolder "+source);
+                  resolve()
+                },err=>{ 
+                    if(err.status !=404) showStatus(err,"emptyFolder "+source);
+                    resolve()
+                })
+            }
+            break;
+
         case "cp"   :
         case "copy" :
             let opts = {}

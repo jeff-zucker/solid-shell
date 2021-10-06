@@ -1,42 +1,47 @@
+# prep test area
+#
 recursiveDelete ./test-folder/
 
-put ./test-folder/test.ttl "This is a test."
+# create resource
+#
+put ./test-folder/sub1/test1.txt "This is a test."
 
-move  ./test-folder/test.ttl  ./test-folder/test-2.ttl
-notExists ./test-folder/test.ttl
-matchText ./test-folder/test-2.ttl "This is a test."
+# move resource
+#
+move  ./test-folder/sub1/test1.txt  ./test-folder/sub1/test-2.txt
+notExists ./test-folder/sub1/test1.txt
+matchText ./test-folder/sub1/test-2.txt "This is a test."
 
-copy ./test-folder/test-2.ttl  ./test-folder/test-3.ttl
-exists ./test-folder/test-2.ttl
-exists ./test-folder/test-3.ttl
+# copy resource
+#
+copy ./test-folder/sub1/test-2.txt  ./test-folder/sub1/test-3.txt
+exists ./test-folder/sub1/test-2.txt
+exists ./test-folder/sub1/test-3.txt
 
-zip ./test-folder/ ./test.zip
-exists ./test.zip
+zip ./test-folder/sub1/ ./test-folder/zip-folder/test.zip
+exists ./test-folder/zip-folder/test.zip
 
-unzip ./test.zip ./test-folder-2/
-exists ./test-folder-2/test-folder/test-3.ttl
+unzip ./test-folder/zip-folder/test.zip ./test-folder/zip-folder/
+exists ./test-folder/zip-folder/sub1/test-3.txt
 
 recursiveDelete ./test-folder/
-recursiveDelete ./test-folder-2/
-delete ./test.zip
-
 notExists ./test-folder/
 
 # END
 
 Expected Output :
 
-ok put <./test-folder/test.ttl>
-ok move <./test-folder/test.ttl> to <./test-folder/test-2.ttl>
-ok notExists <./test-folder/test.ttl>
-ok contentsMatch <test-2.ttl>
-ok copy <./test-folder/test-2.ttl> to <./test-folder/test-3.ttl>
-ok exists <./test-folder/test-2.ttl
-ok exists <./test-folder/test-3.ttl
+ok put <./test-folder/sub1/test.txt>
+ok move <./test-folder/sub1/test.txt> to <./test-folder/test-2.txt>
+ok notExists <./test-folder/sub1/test.txt>
+ok contentsMatch <test-2.txt>
+ok copy <./test-folder/test-2.txt> to <./test-folder/test-3.txt>
+ok exists <./test-folder/test-2.txt
+ok exists <./test-folder/test-3.txt
 ok zip <./test-folder/> to <./test.zip>
 ok exists <./test.zip
 ok unzip <./test.zip> to <./test-folder-2/>
-ok exists <./test-folder-2/test-folder/test-3.ttl
+ok exists <./test-folder-2/test-folder/test-3.txt
 ok delete <./test-folder/>
 ok delete <./test-folder-2/>
 ok delete <./test.zip>

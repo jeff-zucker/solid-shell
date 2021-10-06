@@ -96,6 +96,14 @@ program
         },err=>console.log(err));
     });
 program
+    .command('emptyFolder <URL>')
+    .description('recursively delete the contents of a folder tree')
+    .action( async (URL) => {
+        if( program.opts().login ) await sol.runSol("login")
+        sol.runSol("emptyFolder",[URL]).then(()=>{
+        },err=>console.log(err));
+    });
+program
     .command('zip <folderURL> <zipFileURL>')
     .description('create a zip archive')
     .action( async (folderURL,zipFileURL) => {
