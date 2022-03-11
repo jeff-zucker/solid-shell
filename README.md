@@ -8,12 +8,12 @@ Solid-shell (hereafter called Sol) is a nodejs tool for accessing Solid data tha
 
 Here's an overview of methods :
 ```text
-     Document Management  put,post,patch get,head,options,copy,move,delete,zip,unzip
+     Document Management  put,post,patch get,head,options,copy,move,delete,recursiveDelete,zip,unzip
 Testing/Batch Processing  run,exists,notExists,matchText,statusOnly,verbosity
             Connectivity  login, base
        Interactive Shell  shell, help, quit
 ```
-## NOTE : This App is in transition!**  Everything in the documentation should work, but I may be changing the API slightly in the coming weeks.  I'll remove this note when finalized and post changes here at the top:
+Some recent changes :
 
 * There are now two methods to delete : simple **delete**  (for a file or an empty folder) and **recursiveDelete** for an entire folder tree.
 * Added methods for patch and options
