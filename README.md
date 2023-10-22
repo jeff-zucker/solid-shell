@@ -25,7 +25,7 @@ You can either install via npm or clone the github repo
 
 To install with npm
 ```
-  * npm install -g
+  * npm install -g solid-shell
   * you should now be able to use "sol" to run solid-shell
 ```
 To install via the github repo
