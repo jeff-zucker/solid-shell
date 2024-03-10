@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const pr = require('./prefixes.js');
 const FC=require("solid-file-client/")
-const {SolidNodeClient} = require('/home/jeff/s/solid-node-client/dist/cjs/index.js');
+const {SolidNodeClient} = require('solid-node-client');
 const client = new SolidNodeClient({parser:$rdf});
 const fc = new FC(client)
 const show = require("./sol.show.js");
@@ -638,11 +638,22 @@ async function getCredentials(){
  * login()
  */
 async function login(){
-    log("logging in ...")
+  log("logging in ...")
+  try {
     credentials = await getCredentials()
     let session = await client.login(credentials)
-    log(`logged in as <${session.webId}>`)
-    return session
+    if(session.isLoggedIn) {
+      log(`logged in as <${session.webId}>`)
+      return session
+    }
+    else {
+      log(`Could not log in
+    to  <${credentials.idp}>
+    as "${credentials.username}" 
+    using a password that is ${credentials.password.length} characters long.
+      `)
+    }
+  }catch(e){console.log('LOGIN ERROR : ',e)}
 }
 console.error = (msg) => {
      if(!msg.match(/fetchQueue/))  console.log(msg)

@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "main": "sol",
   "repository": "https://github.com/jeff-zucker/solid-shell.git",
   "author": "Jeff Zucker",
@@ -20,6 +20,7 @@
     "@solid-rest/core": "^2.1.18",
     "@solid-rest/file": "^2.1.18",
     "commander": "^12.0.0",
+    "cross-fetch": "^4.0.0",
     "mime-types": "^2.1.35",
     "rdflib": "^2.2.33",
     "readline-sync": "^1.4.10",
