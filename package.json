@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "main": "sol",
   "repository": "https://github.com/jeff-zucker/solid-shell.git",
   "author": "Jeff Zucker",
@@ -17,14 +17,15 @@
     "sol": "./sol"
   },
   "dependencies": {
-    "@solid-rest/core": "^2.1.7",
-    "@solid-rest/file": "^2.1.7",
-    "commander": "^7.2.0",
-    "mime-types": "^2.1.34",
-    "rdflib": "^2.2.17",
+    "@solid-rest/core": "^2.1.18",
+    "@solid-rest/file": "^2.1.18",
+    "commander": "^12.0.0",
+    "mime-types": "^2.1.35",
+    "rdflib": "^2.2.33",
     "readline-sync": "^1.4.10",
+    "solid-auth-fetcher": "^1.5.3",
     "solid-file-client": "^2.1.3",
-    "solid-namespace": "^0.5.2",
-    "solid-node-client": "^2.1.10"
+    "solid-namespace": "^0.5.3",
+    "solid-node-client": "^2.1.13"
   }
 }

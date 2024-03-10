@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const program = require('commander');
+const {program} = require('commander');
 const sol     = require('./src/sol.run.js');   // the commands
 const shell   = require('./src/sol.shell.js'); // the prompts
 /*
