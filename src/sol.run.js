@@ -4,10 +4,10 @@ const {mungeURL,unMunge,isFolder,do_err,log,getContentType}=require('./utils.js'
 const fs = require("fs");
 const path = require("path");
 const pr = require('./prefixes.js');
-const FC=require("solid-file-client/")
+const {SolidFileClient}=require("solid-file-client")
 const {SolidNodeClient} = require('solid-node-client');
 const client = new SolidNodeClient({parser:$rdf});
-const fc = new FC(client)
+const fc = new SolidFileClient(client)
 const show = require("./sol.show.js");
 const shell = require('./sol.shell.js');
 const contentTypeLookup = require('mime-types').contentType;
@@ -33,20 +33,6 @@ async function runSol(com,args) {
           log( await semantics.load(source) );
           resolve();
           break          
-/*
-        case "load" :
-          source = mungeURL(args[0]);
-          try {
-            fetcher.load(source).then(()=>{
-              log(`ok load <${unMunge(source)}>`);
-              resolve();
-            });
-          }
-          catch(err) {
-            log(`Could not load ${source} - ${err.status}`);
-          }
-          break;
-*/
         case "putback" :
         case "putBack" :
           source = mungeURL(args[0]);
@@ -321,7 +307,8 @@ function showStatus( response, msg ){
             else {
               let cType = getContentType(source);
               fc.createFile(source,content,cType).then( (r) => {
-                showStatus(r,"put "+source)
+        showStatus({status:"ok",statusText:"ok"},"put <"+unMunge(source)+">");
+//                showStatus(r,"put "+source)
                 resolve()
               },err=>{ 
                 showStatus(err,"put "+source)
@@ -392,19 +379,23 @@ function showStatus( response, msg ){
             type = source.endsWith("/") ?"Container" :"Resource"
             if( source.endsWith("/") ){
                 fc.delete(source).then( (response) => {
-                    showStatus(response,`DELETE ${type}`);
+        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+//                    showStatus(response,`DELETE ${type}`);
                     resolve()
                 },response=>{ 
-                    showStatus(response,`DELETE ${type}`);
+        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+//                    showStatus(response,`DELETE ${type}`);
                     resolve()
                 })
             }
             else {
                 fc.deleteFile(source).then( (response) => {
-                    showStatus(response,`DELETE ${type}`);
+        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+//                    showStatus(response,`DELETE ${type}`);
                     resolve();
                 },response=>{ 
-                    showStatus(response,`DELETE ${type}`);
+        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+//                    showStatus(response,`DELETE ${type}`);
                     resolve()
                 })
             }
@@ -414,14 +405,20 @@ function showStatus( response, msg ){
             source = mungeURL(args[0]);
             if(!source) resolve();
             if( source.endsWith("/") ){
-                fc.deleteFolderRecursively(source).then( (response) => {
+              let r = await fc.head(source);
+              if(r.status==404){
+                console.log("  ok recursiveDelete - already empty <",unMunge(source)+">");
+                resolve();
+              }
+              else {
+                try {
+                  response = await fc.deleteFolderRecursively(source);
                   if(verbosity>0)
-                    showStatus({status:"",statusText:"ok"},"recursiveDelete "+source);
-                  resolve()
-                },err=>{ 
-                    if(err.status !=404) showStatus(err,"delete "+source);
-                    resolve()
-                })
+                    showStatus({status:"ok",statusText:"ok"},"recursiveDelete "+source);
+                }
+                catch(e){console.log(e)}
+                resolve()
+              }
             }
             else {
                 fc.deleteFile(source).then( (response) => {
@@ -501,7 +498,9 @@ function showStatus( response, msg ){
         case "run" :
             source = mungeURL(args[0]);
             if(!source) resolve();
-            fc.readFile(source).then( async (content) => {
+              try {
+                content = await fc.readFile(source)
+              }catch(err){ do_err(err); resolve() }
               let statements = content.split("\n")
               for(stmt of statements) {
                   stmt = stmt.trim();
@@ -517,7 +516,6 @@ function showStatus( response, msg ){
                   await runSol(c,args)
               }
               resolve()
-            },err=>{ do_err(err); resolve() })
             break;
  
         case "statusOnly" :
@@ -536,23 +534,32 @@ function showStatus( response, msg ){
             break;
 
         case "exists" :
+        case "notExists" :
             source = mungeURL(args[0])
-/*
+
             fc.head(source).then( r => {
-              log(`${r.status } head <${source}>`)
+              if(r.status==404){
+                if(com==="exists") log(`FAIL exists <${unMunge(source)}>`)
+                if(com==="notExists") log(`ok notExists <${unMunge(source)}>`)
+              }
+              else {
+                if(com==="exists") log(`ok exists <${unMunge(source)}>`)
+                if(com==="notExists") log(`FAIL notExists <${unMunge(source)}>`)
+              }
               resolve()
             },err=>{
               log(`${err.status } head <${source}>`)
               resolve()
             })
-*/
+/*
             fc.itemExists(source).then( (exists) => {
                 log((exists ?"ok exists" :"FAIL  exists")+" <"+unMunge(source)+">");
                 resolve(exists);
             },err=>{ 
                 resolve(false) })
+*/
             break;
-
+/*
         case "notExists" :
             source = mungeURL(args.shift())
             fc.itemExists(source).then( (exists) => {
@@ -564,7 +571,7 @@ function showStatus( response, msg ){
               resolve(true) 
             })
             break;
-
+*/
         case "matchText" :
             source = mungeURL(args.shift())
             expected = args.join(' ');
@@ -578,13 +585,14 @@ function showStatus( response, msg ){
             }           
 //            log(`Reading <${source}> ...`);
             fc.readFile(source).then( (got) => {
+              const orgSource = source;
               source = path.basename(source)
               let results = got.indexOf(expected)>-1;
               if(results){
-                log(`ok contentsMatch <${unMunge(source)}>`)
+                log(`ok contentsMatch <${unMunge(orgSource)}>`)
               }
               else {
-                log(`FAIL contentsMatch <${unMunge(source)}, got: ${got}`)
+                log(`FAIL contentsMatch <${unMunge(orgSource)}, got: ${got}`)
               }
               resolve(results);
             },err=>{

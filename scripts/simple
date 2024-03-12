@@ -1,15 +1,15 @@
 put ./test-folder/test.txt "hello world"
 exists ./test-folder/test.txt
 matchText  ./test-folder/test.txt "hello world"
-delete ./test-folder/
+recursiveDelete ./test-folder/
 notExists ./test-folder/
 
 # END 
 
 Expected output :
 
-ok put <./test-folder/test.txt>
-ok exists <./test-folder/test.txt>
-ok contentsMatch <test.txt>
-ok delete <./test-folder/>
-ok notExists <./test-folder/>
+201 put <...>
+ok exists <...>
+ok contentsMatch <...>
+ok recursiveDelete <...>
+ok notExists <...>
