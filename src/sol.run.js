@@ -13,6 +13,8 @@ const shell = require('./sol.shell.js');
 const contentTypeLookup = require('mime-types').contentType;
 var verbosity = 2
 let credentials;
+let rbase=process.env.SOLID_REMOTE_BASE;
+
 const LINK = {
   CONTAINER: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
   RESOURCE: '<http://www.w3.org/ns/ldp#Resource>; rel="type"'
@@ -20,8 +22,6 @@ const LINK = {
 const kb = $rdf.graph();
 const fetcher = $rdf.fetcher(kb,{fetch:client.fetch.bind(client)});
 let source = "https://example.com/";
-let rbase = credentials ? credentials.base : process.env.SOLID_REMOTE_BASE;
-process.env.SOLID_REMOTE_BASE = rbase;
 let statusOnly = false;
 
 module.exports.runSol = runSol;
@@ -643,7 +643,7 @@ async function getCredentials(){
   let idp =  await shell.prompt("idp? ");
   let username =  await shell.prompt("username? ");
   let password = await shell.prompt("password? ","mute");
-  let base = await shell.prompt("remote base? ");
+  let base = rbase = await shell.prompt("remote base? ");
   return { idp, username, password, base }
 }
 /**
