@@ -21,7 +21,9 @@ Some recent changes :
 
 ## Installation
 
-You can either install via npm or clone the github repo
+You can run without installing, with this command line: `npx solid-shell shell`.
+
+If you want to instll, you can either install via npm or clone the github repo
 
 To install with npm
 ```
@@ -71,7 +73,7 @@ If using a Node-Solid-Server (NSS) such as solidcommunity.net you may login with
   SOLID_PASSWORD
   SOLID_IDP
   SOLID_REMOTE_BASE
-
+```
 3. See below "performing a login"
 
 ### Prep for logging  in with a token
