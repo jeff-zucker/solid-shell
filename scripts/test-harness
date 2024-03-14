@@ -3,7 +3,7 @@ statusOnly true
 !
 ! SOLID-REST (LOCAL FILE SYSTEM)
 verbosity 0
-base ./test
+base ./test/
 run ./scripts/test
 
 !
@@ -13,7 +13,7 @@ login
 !
 ! NSS
 verbosity 0
-base https://jeff-zucker.solidcommunity.net/test7
+base https://jeff-zucker.solidcommunity.net/test7/
 run ./scripts/test
 
 

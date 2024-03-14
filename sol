@@ -2,11 +2,13 @@
 const {program} = require('commander');
 const sol     = require('./src/sol.run.js');   // the commands
 const shell   = require('./src/sol.shell.js'); // the prompts
+const {packageVersions} = require('./src/utils.js'); // version display
 /*
  *  This file is the command-line interface
 */
 
 async function main() {
+  await packageVersions(['../','solid-file-client','solid-node-client','@solid-rest/file']);
   program.parse(process.argv);
 }
 program.option('-l,--login',"login");

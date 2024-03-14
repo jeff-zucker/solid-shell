@@ -1,4 +1,4 @@
-# prep test area
+# prep test
 #
 recursiveDelete ./test-folder/
 

@@ -204,7 +204,7 @@ function showStatus( response, msg ){
                 showStatus(response,`GET ${type}`);
                 resolve()
               },(response)=>{
-                showStatus(response,`GET ${type} ${unMunge(source)}`);
+                showStatus(response,`GET ${type} ${source}`);
                 resolve()
               })
             }
@@ -290,7 +290,7 @@ function showStatus( response, msg ){
                 showStatus(response,`PUT ${type}`);
                 resolve()
               },response=>{
-                showStatus(response,`PUT ${type} <${unMunge(source)}>`);
+                showStatus(response,`PUT ${type} <${source}>`);
                 resolve()
               })
               break;
@@ -307,7 +307,7 @@ function showStatus( response, msg ){
             else {
               let cType = getContentType(source);
               fc.createFile(source,content,cType).then( (r) => {
-        showStatus({status:"ok",statusText:"ok"},"put <"+unMunge(source)+">");
+        showStatus({status:"ok",statusText:"ok"},"put <"+source+">");
 //                showStatus(r,"put "+source)
                 resolve()
               },err=>{ 
@@ -346,7 +346,7 @@ function showStatus( response, msg ){
             else {
                let cType = getContentType(source);
                fc.postItem(source,content,cType,LINK.RESOURCE).then( () => {
-                 log(`ok put <${unMunge(source)}>`)
+                 log(`ok put <${source}>`)
                  resolve()
                },err=>{ do_err(err); resolve() })
             }
@@ -379,22 +379,22 @@ function showStatus( response, msg ){
             type = source.endsWith("/") ?"Container" :"Resource"
             if( source.endsWith("/") ){
                 fc.delete(source).then( (response) => {
-        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+        showStatus({status:"ok",statusText:"ok"},"delete <"+source+">");
 //                    showStatus(response,`DELETE ${type}`);
                     resolve()
                 },response=>{ 
-        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+        showStatus({status:"ok",statusText:"ok"},"delete <"+source+">");
 //                    showStatus(response,`DELETE ${type}`);
                     resolve()
                 })
             }
             else {
                 fc.deleteFile(source).then( (response) => {
-        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+        showStatus({status:"ok",statusText:"ok"},"delete <"+source+">");
 //                    showStatus(response,`DELETE ${type}`);
                     resolve();
                 },response=>{ 
-        showStatus({status:"ok",statusText:"ok"},"delete <"+unMunge(source)+">");
+        showStatus({status:"ok",statusText:"ok"},"delete <"+source+">");
 //                    showStatus(response,`DELETE ${type}`);
                     resolve()
                 })
@@ -407,14 +407,14 @@ function showStatus( response, msg ){
             if( source.endsWith("/") ){
               let r = await fc.head(source);
               if(r.status==404){
-                console.log("  ok recursiveDelete - already empty <",unMunge(source)+">");
+                console.log("  ok recursiveDelete - already empty <",source+">");
                 resolve();
               }
               else {
                 try {
                   response = await fc.deleteFolderRecursively(source);
                   if(verbosity>0)
-                    showStatus({status:"ok",statusText:"ok"},"recursiveDelete "+source);
+                     console.log("  ok recursiveDelete, nothing to delete <"+source+">");
                 }
                 catch(e){console.log(e)}
                 resolve()
@@ -456,7 +456,7 @@ function showStatus( response, msg ){
             if(!source) resolve();
             if(!target) resolve();
             fc.copy(source,target,opts).then( () => {
-                log(`ok copy <${unMunge(source)}> to <${unMunge(target)}>`);
+                log(`ok copy <${source}>\n       to <${target}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -467,7 +467,7 @@ function showStatus( response, msg ){
             if(!source) resolve();
             if(!target) resolve();
             fc.createZipArchive(source,target,{links:"exclude"}).then( () => {
-                log(`ok zip to <${unMunge(target)}>`);
+                log(`ok zip to <${target}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -478,7 +478,7 @@ function showStatus( response, msg ){
             if(!source) resolve();
             if(!target) resolve();
             fc.extractZipArchive(source,target).then( () => {
-                log(`ok unzip to <${unMunge(target)}>`);
+                log(`ok unzip to <${target}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -490,7 +490,7 @@ function showStatus( response, msg ){
             if(!source) resolve();
             if(!target) resolve();
             fc.move(source,target).then( () => {
-                log(`ok move <${unMunge(source)}> to <${unMunge(target)}>`)
+                log(`ok move <${source}>\n       to <${target}>`)
                 resolve();
             },err=>{ do_err(err); resolve() })
             break;
@@ -525,6 +525,10 @@ function showStatus( response, msg ){
 
         case "base" :
             source = mungeURL(args.shift());
+            if(!source){
+              console.log("Must specify a URL!");
+              resolve();
+            }
             source = source.replace(/\/$/,'');
             credentials = credentials || {};
             credentials.base= rbase= process.env.SOLID_REMOTE_BASE= source;
@@ -539,12 +543,12 @@ function showStatus( response, msg ){
 
             fc.head(source).then( r => {
               if(r.status==404){
-                if(com==="exists") log(`FAIL exists <${unMunge(source)}>`)
-                if(com==="notExists") log(`ok notExists <${unMunge(source)}>`)
+                if(com==="exists") log(`FAIL exists <${source}>`)
+                if(com==="notExists") log(`ok notExists <${source}>`)
               }
               else {
-                if(com==="exists") log(`ok exists <${unMunge(source)}>`)
-                if(com==="notExists") log(`FAIL notExists <${unMunge(source)}>`)
+                if(com==="exists") log(`ok exists <${source}>`)
+                if(com==="notExists") log(`FAIL notExists <${source}>`)
               }
               resolve()
             },err=>{
@@ -553,7 +557,7 @@ function showStatus( response, msg ){
             })
 /*
             fc.itemExists(source).then( (exists) => {
-                log((exists ?"ok exists" :"FAIL  exists")+" <"+unMunge(source)+">");
+                log((exists ?"ok exists" :"FAIL  exists")+" <"+source+">");
                 resolve(exists);
             },err=>{ 
                 resolve(false) })
@@ -564,7 +568,7 @@ function showStatus( response, msg ){
             source = mungeURL(args.shift())
             fc.itemExists(source).then( (exists) => {
                 let notExists = exists ? false : true;
-                log( (notExists ?"ok notExists" :"FAIL notExists")+" <"+unMunge(source)+">");
+                log( (notExists ?"ok notExists" :"FAIL notExists")+" <"+source+">");
                 resolve(notExists);
             },err=>{ 
               log(true)
@@ -589,10 +593,10 @@ function showStatus( response, msg ){
               source = path.basename(source)
               let results = got.indexOf(expected)>-1;
               if(results){
-                log(`ok contentsMatch <${unMunge(orgSource)}>`)
+                log(`ok contentsMatch <${orgSource}>`)
               }
               else {
-                log(`FAIL contentsMatch <${unMunge(orgSource)}, got: ${got}`)
+                log(`FAIL contentsMatch <${orgSource}, got: ${got}`)
               }
               resolve(results);
             },err=>{

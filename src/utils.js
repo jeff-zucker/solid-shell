@@ -1,5 +1,37 @@
 const contentTypeLookup = require('mime-types').contentType;
+
 let lbase = process.platform==="win32" ? `file:///${process.cwd().replace(/\\/g,'/')}` : "file://" + process.cwd();
+
+
+async function packVers(pname){
+
+ try {
+    // Get the path to the package.json file of the package
+    const packageJsonPath = require.resolve(`${pname}/package.json`);
+    
+    // Load the package.json file
+    let packageJson = require(packageJsonPath);
+    
+    // Extract the version of the package
+    const packageVersion = packageJson.version;
+    if(pname=='../')pname='solid-shell';    
+    return([pname,packageVersion]);
+  } catch (error) {
+//    console.error(`Failed to determine the version of ${pname}: ${error.message}`);
+  }
+}
+
+async function shellVersion(){
+  return (await packVers('../'))[1];
+}
+async function packageVersions(packages){
+  let str = "";
+  for(let p of packages){
+    p  = await packVers(p);
+    str += `${p[0]}:${p[1]}, `;
+  }
+  console.log( "  "+str.replace(/, $/,'') );
+}
 
 function unMunge(url) {
     if(!url) return
@@ -65,5 +97,5 @@ function getContentType(path) {
 }
 
 module.exports = {
-  mungeURL, unMunge, isFolder, do_err, log, getContentType
+  mungeURL, unMunge, isFolder, do_err, log, getContentType, packageVersions, shellVersion
 }

@@ -55,28 +55,45 @@ Once in the shell, enter "help" to see a list of commands available in the shell
 
 You can read and write local resources and read public pod-based resources without logging in.  To access private pod data, you will need to specify your login credentials and login.  Sol looks for the credentials first in environment variables, and if not found, prompts you for them. 
 
-If using an NSS based server such as solidcommunity.net or inrupt.net, you may use either a username/password login or a token login.  If you are using other servers, you will need to use a token login.  See [Solid-Node-Client README](https://github.com/jeff-zucker/solid-node-client) for details.  With either type of credentials, 
+### Prep for logging in with username/password on NSS
 
-These are the environment variables Sol looks for:
+If using a Node-Solid-Server (NSS) such as solidcommunity.net you may login with username and password.  This requires two one-time steps and which can thereafter be skipped:
+
+1. Set `https://solid-node-client` as a trusted app for your pod by one of these methods:
+
+    a. manually edit your profile if you know how, or
+
+    b. go to your pod root e.g. `https://YOU.solidcommunity.net/`; login using the databrowser; click on the preferences tab; scroll to the bottom of the trusted apps and add `https//solid-node-client`
+
+2. You can let Sol prompt you for login credentials each time, or you can set the following environment variables once and Sol will use them thereafter:
 ```
-Either
   SOLID_USERNAME
   SOLID_PASSWORD
   SOLID_IDP
   SOLID_REMOTE_BASE
-Or
+
+3. See below "performing a login"
+
+### Prep for logging  in with a token
+
+If you are not using NSS or are not using the username/password login, please read the documentation for your server and find out how to get the data needed to set these environmen t variables.  If these are not in your environment, you will be prompted for them when you login.
+```
   SOLID_REFRESH_TOKEN
   SOLID_CLIENT_ID
   SOLID_CLIENT_SECRET
   SOLID_OIDC_ISSUER
   SOLID_REMOTE_BASE
 ```
-Once your environment variables are set, you may login using the -l or --login flags on the command line
+
+### Performing a login
+
+You can invoke login from the command-line, in the interactive shell or from a script.  In all cases Sol will look for the environment variables shown above and, if they any are missing, will prompt you for them.  
+
+From the command line :
 ```
   sol -l head /foo/private.txt
   sol --login head /foo/private.txt
 ```
-You may also call login directly in a script or in the interactive shell.
 
 ## Specifying a base folder
 

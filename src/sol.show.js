@@ -1,6 +1,7 @@
 const path = require("path")
+const {shellVersion} = require('./utils.js');
 
-module.exports = function(type,thing,verbosity){
+module.exports = async function(type,thing,verbosity){
     switch(type) {
         case "file" :
             log(thing,verbosity)
@@ -35,13 +36,16 @@ module.exports = function(type,thing,verbosity){
             break;
 
         case "help" : 
+            let version = await shellVersion();
             log(`------------------------------------------------------------------------------
-Solid Shell - a command line, batch processor, & interactive shell for Solid
+  Solid Shell ${version} - a command line, batch processor, & interactive shell
 ------------------------------------------------------------------------------
        Document Management  put, get, head, copy, move, delete, zip, unzip
   Testing/Batch Processing  run, exists, notExists, matchText
               Connectivity  login, base
          Interactive Shell  help, quit
+------------------------------------------------------------------------------
+ URLs beginging with / = remote base ./ = local base, or use https: and file:
 ------------------------------------------------------------------------------`
       ,verbosity)
       break
