@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "2.0.15",
+  "version": "2.0.17",
   "engines": {
     "node": ">=16.0.0"
   },
@@ -20,8 +20,6 @@
     "sol": "./sol"
   },
   "dependencies": {
-    "@solid-rest/core": "^2.1.19",
-    "@solid-rest/file": "^2.1.19",
     "commander": "^12.0.0",
     "cross-fetch": "^4.0.0",
     "mime-types": "^2.1.35",
@@ -29,6 +27,6 @@
     "readline-sync": "^1.4.10",
     "solid-file-client": "^2.1.5",
     "solid-namespace": "^0.5.3",
-    "solid-node-client": "^2.1.16"
+    "solid-node-client": "^2.1.17"
   }
 }

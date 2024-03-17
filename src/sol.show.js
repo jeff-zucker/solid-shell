@@ -45,7 +45,7 @@ module.exports = async function(type,thing,verbosity){
               Connectivity  login, base
          Interactive Shell  help, quit
 ------------------------------------------------------------------------------
- URLs beginging with / = remote base ./ = local base, or use https: and file:
+ URLs beginging with / = remote base, ./ = local cwd, or use https: and file:
 ------------------------------------------------------------------------------`
       ,verbosity)
       break

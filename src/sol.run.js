@@ -1,16 +1,26 @@
+// general imports
+//
 const $rdf = global.$rdf = require("rdflib");
-const semantics = require("./semantics.js");
-const {mungeURL,unMunge,isFolder,do_err,log,getContentType}=require('./utils.js')
 const fs = require("fs");
 const path = require("path");
-const pr = require('./prefixes.js');
+const contentTypeLookup = require('mime-types').contentType;
+
+// imports from other JZ libraries
+//
 const {SolidFileClient}=require("solid-file-client")
 const {SolidNodeClient} = require('solid-node-client');
-const client = new SolidNodeClient({parser:$rdf});
-const fc = new SolidFileClient(client)
+
+// imports from this library
+//
+const semantics = require("./semantics.js");
+const {mungeURL,unMunge,isFolder,do_err,log,getContentType}=require('./utils.js')
+const pr = require('./prefixes.js');
 const show = require("./sol.show.js");
 const shell = require('./sol.shell.js');
-const contentTypeLookup = require('mime-types').contentType;
+
+const client = new SolidNodeClient({parser:$rdf});
+const fc = new SolidFileClient(client)
+
 var verbosity = 2
 let credentials;
 let rbase=process.env.SOLID_REMOTE_BASE;
