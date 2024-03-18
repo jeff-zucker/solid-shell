@@ -1,6 +1,6 @@
 {
   "name": "solid-shell",
-  "version": "2.0.17",
+  "version": "2.0.18",
   "engines": {
     "node": ">=16.0.0"
   },
@@ -25,7 +25,7 @@
     "mime-types": "^2.1.35",
     "rdflib": "^2.2.33",
     "readline-sync": "^1.4.10",
-    "solid-file-client": "^2.1.5",
+    "solid-file-client": "^2.1.7",
     "solid-namespace": "^0.5.3",
     "solid-node-client": "^2.1.17"
   }

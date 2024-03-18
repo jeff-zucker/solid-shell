@@ -6,6 +6,7 @@ recursiveDelete ./test-folder/
 #
 put ./test-folder/sub1/test-1.txt "This is a test."
 
+
 # READ
 #
 matchText ./test-folder/sub1/test-1.txt "This is a test."
@@ -27,12 +28,13 @@ move  ./test-folder/sub1/test-1.txt  ./test-folder/sub1/test-3.txt
 notExists ./test-folder/sub1/test-1.txt
 matchText ./test-folder/sub1/test-3.txt "This is a test."
 
+
 # ZIP
 #
-#zip ./test-folder/sub1/ ./test-folder/zip-folder/test.zip
-#exists ./test-folder/zip-folder/test.zip
-#unzip ./test-folder/zip-folder/test.zip ./test-folder/zip-folder/
-#exists ./test-folder/zip-folder/sub1/test-3.txt
+zip ./test-folder/sub1/ ./test-folder/zip-folder/test.zip
+exists ./test-folder/zip-folder/test.zip
+unzip ./test-folder/zip-folder/test.zip ./test-folder/zip-folder/
+exists ./test-folder/zip-folder/sub1/test-3.txt
 
 recursiveDelete ./test-folder/
 notExists ./test-folder/
