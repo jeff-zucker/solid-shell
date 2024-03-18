@@ -487,7 +487,7 @@ function showStatus( response, msg ){
             target = mungeURL(args[1]);
             if(!source) resolve();
             if(!target) resolve();
-            fc.createZipArchive(source,target,{links:"exclude"}).then( () => {
+            fc.createZipArchive(source,target,{ blob: false }).then( () => {
                 log(`ok zip to <${target}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
@@ -498,7 +498,7 @@ function showStatus( response, msg ){
             target = mungeURL(args[1]);
             if(!source) resolve();
             if(!target) resolve();
-            fc.extractZipArchive(source,target).then( () => {
+            fc.extractZipArchive(source,target, { blob: false }).then( () => {
                 log(`ok unzip to <${target}>`);
                 resolve();
             },err=>{ do_err(err); resolve() })
