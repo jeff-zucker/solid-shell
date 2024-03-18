@@ -1,10 +1,5 @@
 #statusOnly true
-
-!
-! SOLID-REST (LOCAL FILE SYSTEM)
 verbosity 0
-base ./test/
-run ./scripts/test
 
 !
 ! LOGIN
@@ -12,8 +7,13 @@ login
 
 !
 ! NSS
-verbosity 0
-base https://jeff-zucker.solidcommunity.net/test7
-run ./scripts/test
+run ./scripts/test2
+
+!
+! SOLID-REST (LOCAL FILE SYSTEM)
+base ./
+run ./scripts/test2
+
+
 
 
