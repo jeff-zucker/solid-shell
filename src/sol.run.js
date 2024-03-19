@@ -194,7 +194,8 @@ console.log("got ",stmts.length);
             break
 
         case "login" :
-            login().then( session => {
+            let force = args[0];
+            login(force).then( session => {
                 resolve();
             }, err => reject("error logging in : "+err) );
             break;
@@ -623,10 +624,10 @@ function showStatus( response, msg ){
  * prompt for things not found in either place
  * see solid-auth-cli for details
  */
-async function getCredentials(){
+async function getCredentials(force){
   const e = process.env
   let creds = {};
-  if( e.SOLID_IDP && e.SOLID_USERNAME && e.SOLID_PASSWORD && e.SOLID_REMOTE_BASE) {
+  if( !force &&  e.SOLID_IDP && e.SOLID_USERNAME && e.SOLID_PASSWORD && e.SOLID_REMOTE_BASE) {
     return {
       idp:process.env.SOLID_IDP,
       username:process.env.SOLID_USERNAME,
@@ -634,7 +635,7 @@ async function getCredentials(){
       base:process.env.SOLID_REMOTE_BASE,
     }
   }
-  else if( e.SOLID_CLIENT_ID && e.SOLID_CLIENT_SECRET 
+  else if( !force && e.SOLID_CLIENT_ID && e.SOLID_CLIENT_SECRET 
            && e.SOLID_REFRESH_TOKEN && e.SOLID_OIDC_ISSUER
   ) {
     return {
@@ -654,10 +655,10 @@ async function getCredentials(){
 /**
  * login()
  */
-async function login(){
+async function login(force){
   log("logging in ...")
   try {
-    credentials = await getCredentials()
+    credentials = await getCredentials(force)
     let session = await client.login(credentials)
     if(session.isLoggedIn) {
       log(`logged in as <${session.webId}>`)
