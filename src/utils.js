@@ -71,10 +71,10 @@ function mungeURL(url) {
 function isFolder(thing){
   return thing.endsWith('/');
 }
-function do_err(err){
-//  if(verbosity>0){
-     console.log(`Error: ${(err.status||"unknown")} ${(err.statusText||"")}`)
-//  }
+function do_err(err,verbosity){
+   verbosity ||=4;
+   console.log(`Error: ${(err.status||"unknown")} ${(err.statusText||"")}`)
+   if(verbosity>3) console.log(err);
 }
 function log(msg) {
 //    if(verbosity==2 || verbosity==3){

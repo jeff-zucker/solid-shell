@@ -184,7 +184,7 @@ console.log("got ",stmts.length);
         case "verbosity" :
         case "v" :
             let v = args[0]
-            if(typeof(v)!="undefined" && v<4) {
+            if(typeof(v)!="undefined" && v<5) {
               verbosity = v
             }
             else {
@@ -358,7 +358,7 @@ function showStatus( response, msg ){
                fc.postItem(source,content,cType,LINK.RESOURCE).then( () => {
                  log(`ok put <${source}>`)
                  resolve()
-               },err=>{ do_err(err); resolve() })
+               },err=>{ do_err(err,verbosity); resolve() })
             }
             break;
 
@@ -472,13 +472,13 @@ function showStatus( response, msg ){
               res = await fc.copy(source,target,opts)
               log(`ok copy <${source}>\n       to <${target}>`);
             }
-            catch(err){ do_err(err); }
+            catch(err){ do_err(err,verbosity); }
             resolve();
 /*
             fc.copy(source,target,opts).then( () => {
                 log(`ok copy <${source}>\n       to <${target}>`);
                 resolve();
-            }err=>{ do_err(err); resolve() })
+            }err=>{ do_err(err,verbosity); resolve() })
 */
             break;
 
@@ -490,7 +490,7 @@ function showStatus( response, msg ){
             fc.createZipArchive(source,target,{ blob: false }).then( () => {
                 log(`ok zip to <${target}>`);
                 resolve();
-            },err=>{ do_err(err); resolve() })
+            },err=>{ do_err(err,verbosity); resolve() })
             break;
 
         case "unzip" :
@@ -501,7 +501,7 @@ function showStatus( response, msg ){
             fc.extractZipArchive(source,target, { blob: false }).then( () => {
                 log(`ok unzip to <${target}>`);
                 resolve();
-            },err=>{ do_err(err); resolve() })
+            },err=>{ do_err(err,verbosity); resolve() })
             break;
 
         case "mv"   :
@@ -513,7 +513,7 @@ function showStatus( response, msg ){
             fc.move(source,target).then( () => {
                 log(`ok move <${source}>\n       to <${target}>`)
                 resolve();
-            },err=>{ do_err(err); resolve() })
+            },err=>{ do_err(err,verbosity); resolve() })
             break;
 
         case "run" :
@@ -521,7 +521,7 @@ function showStatus( response, msg ){
             if(!source) resolve();
               try {
                 content = await fc.readFile(source)
-              }catch(err){ do_err(err); resolve() }
+              }catch(err){ do_err(err,verbosity); resolve() }
               let statements = content.split("\n")
               for(stmt of statements) {
                   stmt = stmt.trim();
