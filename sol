@@ -66,11 +66,11 @@ program
         },err=>console.log(err));
     });
 program
-    .command('copy <oldURL> <newURL>')
+    .command('copy <oldURL> <newURL> [noAux]')
     .description('copy a file or recursively copy a folder')
-    .action( async (oldURL,newURL) => {
+    .action( async (oldURL,newURL,noAux) => {
         if( program.opts().login ) await sol.runSol("login")
-        sol.runSol("copy",[oldURL,newURL]).then(()=>{
+        sol.runSol("copy",[oldURL,newURL,noAux]).then(()=>{
         },err=>console.log(err));
     });
 program

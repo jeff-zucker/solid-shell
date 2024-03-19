@@ -462,9 +462,9 @@ function showStatus( response, msg ){
 
         case "cp"   :
         case "copy" :
-            let opts = {}
-            if(com==="cps") opts.merge="source"
-            if(com==="cpt") opts.merge="target"
+            let opts = (args[2]&&args[2]=="noAuxFiles") ?{links:'exclude'} :{};
+            //if(com==="cps") opts.merge="source"
+            //if(com==="cpt") opts.merge="target"
             source = mungeURL(args[0]);
             target = mungeURL(args[1]);
             if(!source) resolve();
@@ -475,12 +475,22 @@ function showStatus( response, msg ){
             }
             catch(err){ do_err(err,verbosity); }
             resolve();
-/*
-            fc.copy(source,target,opts).then( () => {
-                log(`ok copy <${source}>\n       to <${target}>`);
-                resolve();
-            }err=>{ do_err(err,verbosity); resolve() })
-*/
+            break;
+
+        case "copyNoAuxFiles" :
+            opts = {links:'exclude'};
+            //if(com==="cps") opts.merge="source"
+            //if(com==="cpt") opts.merge="target"
+            source = mungeURL(args[0]);
+            target = mungeURL(args[1]);
+            if(!source) resolve();
+            if(!target) resolve();
+            try {
+              res = await fc.copy(source,target,opts)
+              log(`ok copy <${source}>\n       to <${target}>`);
+            }
+            catch(err){ do_err(err,verbosity); }
+            resolve();
             break;
 
         case "zip" :
@@ -612,7 +622,7 @@ function showStatus( response, msg ){
             break;
 
         default :
-            if(com) log("can't parse last command")
+            if(com) log("can't parse command ",com)
             resolve();
     }});
 }

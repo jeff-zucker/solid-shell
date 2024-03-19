@@ -74,7 +74,7 @@ function isFolder(thing){
 function do_err(err,verbosity){
    verbosity ||=4;
    console.log(`Error: ${(err.status||"unknown")} ${(err.statusText||"")}`)
-   if(verbosity>3) console.log(err);
+   if(verbosity>3) console.log(err.message);
 }
 function log(msg) {
 //    if(verbosity==2 || verbosity==3){
